@@ -3,11 +3,17 @@
 
 
 #### 框架使用说明
-该项目框架比较灵活 
-对请求相关信息进行了封装 
-用户自己实现数据类型转换 
-用户可以自己实现请求 默认android api HttpURLConnection请求方式
-只需要实现HttpService 实现excuteGetRequest及excutePostRequest及cancelRequest 在初始化 setHttpService(HttpService) 下面OKHttpService是自己实现的 但注意的是该所有阿执行都是在子线程执行 自己必须保证同步执行
+该项目框架比较灵活
+
+ 1.对请求相关信息进行了封装 
+ 
+ 2.用户自己实现数据类型转换 （初始化设置）
+ 
+ 3.用户可以自己实现请求 默认android api HttpURLConnection请求方式 （初始化设置）
+ 
+ 4.和activity生命周期绑定了 页面销毁的时候做了善后工作
+ 
+ 5.只需要实现HttpService 实现excuteGetRequest及excutePostRequest及cancelRequest 在初始化 setHttpService(HttpService) 下面OKHttpService是自己实现的 但注意的是该所有阿执行都是在子线程执行 自己必须保证同步执行
 
     Net net = new Net.Builder()
                     .setConverterFactory(new ResponseConvertFactory(new Gson()))
