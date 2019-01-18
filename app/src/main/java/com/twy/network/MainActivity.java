@@ -9,6 +9,7 @@ import android.widget.Button;
 import com.google.gson.Gson;
 import com.twy.network.business.Net;
 import com.twy.network.business.Observable;
+import com.twy.network.business.OkHttpService;
 import com.twy.network.interfaces.ITestServices;
 import com.twy.network.interfaces.OnRecvDataListener;
 import com.twy.network.model.User;
@@ -41,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
         Net net = new Net.Builder()
                 .setConverterFactory(new ResponseConvertFactory(new Gson()))
                 .baseUrl("http://192.168.1.75:8080/test/")
+                .setHttpService(new OkHttpService())
                 .build();
         services = net.create(ITestServices.class);
     }
