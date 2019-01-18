@@ -15,6 +15,7 @@
                     .setHttpService(new OkHttpService())
                     .build();
                     
+#### Jar包下载地址                    
 https://github.com/tuwenyuan/NetWork/blob/master/network.jar
 
                     
