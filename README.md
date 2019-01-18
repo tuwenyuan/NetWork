@@ -15,7 +15,7 @@
                     .setHttpService(new OkHttpService())
                     .build();
                     
-Jar包下载
+https://github.com/tuwenyuan/NetWork/blob/master/network.jar
 
                     
 #### 请求数据封装
