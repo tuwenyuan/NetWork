@@ -107,15 +107,17 @@ public class RequestManagerFragment extends Fragment {
             RequestInfo requestInfo = new RequestInfo();
             requestInfo.setMethod(observable.get==null? HttpMethod.POST:HttpMethod.GET);
             requestInfo.setUrl(Net.getInstance().getBaseUrl()+(observable.get==null?observable.post.value():observable.get.value()));
-            Map<String,String> params = new HashMap<>();
-            for(int i = 0;i<observable.paramValues.length;i++){
-                String value = observable.paramValues[i].toString();
-                if(((Query)observable.paramNames.get(i)).encoded()){
-                    value = URLEncoder.encode(value,"UTF-8");
+            if(observable.paramValues!=null){
+                Map<String,String> params = new HashMap<>();
+                for(int i = 0;i<observable.paramValues.length;i++){
+                    String value = observable.paramValues[i].toString();
+                    if(((Query)observable.paramNames.get(i)).encoded()){
+                        value = URLEncoder.encode(value,"UTF-8");
+                    }
+                    params.put(((Query)observable.paramNames.get(i)).value(),value);
                 }
-                params.put(((Query)observable.paramNames.get(i)).value(),value);
+                requestInfo.setParams(params);
             }
-            requestInfo.setParams(params);
 
             if(observable.headers!=null){
                 Map<String,String> hds = new HashMap<>();
