@@ -2,8 +2,10 @@ package com.twy.network.business;
 
 import android.util.Log;
 
+import com.twy.network.interfaces.File;
 import com.twy.network.interfaces.GET;
 import com.twy.network.interfaces.Headers;
+import com.twy.network.interfaces.Multipart;
 import com.twy.network.interfaces.POST;
 import com.twy.network.interfaces.Query;
 
@@ -32,9 +34,9 @@ public class MyProxyView  implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args)
             throws Throwable {
         String methodName = method.getName();
-        System.out.println("调用的方法名称为:"+methodName);
+        //System.out.println("调用的方法名称为:"+methodName);
         Class<?> returnType = method.getReturnType();
-        System.out.println("返回的类型为"+returnType.getName());
+        //System.out.println("返回的类型为"+returnType.getName());
         Observable<?> returnObject = (Observable<?>)returnType.newInstance();
 
         //获取到方法的参数列表
@@ -70,18 +72,24 @@ public class MyProxyView  implements InvocationHandler {
                 returnObject.get = (GET) a;
             }else if(POST.class.equals(a.annotationType())){
                 returnObject.post = (POST) a;
+            }else if(Multipart.class.equals(a.annotationType())){
+                returnObject.isMultipart = true;
             }
         }
         returnObject.paramValues = args;
-        List<Query> qs = new ArrayList<>();
+        List<Object> qs = new ArrayList<>();
         //通过注解去取注解上的value
         Annotation parameterAnnotations[][] = method.getParameterAnnotations();
         for (int i = 0; i < parameterAnnotations.length; i++) {
             for (Annotation annotation : parameterAnnotations[i]) {
-                if(Query.class.equals(annotation.annotationType())){
+                /*if(Query.class.equals(annotation.annotationType())){
                     Query q = (Query) annotation;
                     qs.add(q);
-                }
+                }*/
+                /*else if(File.class.equals(annotation.annotationType())){
+                    qs.add(annotation);
+                }*/
+                qs.add(annotation);
             }
         }
         returnObject.paramNames = qs;

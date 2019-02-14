@@ -5,7 +5,11 @@ package com.twy.network.model;
  * PS: Not easy to write code, please indicate.
  */
 public enum ErrorCode {
-    GetOrPostRequired("GET或者POST必须选择一种",500),ConfigMsgRequired("Net对象未创建",500);
+    GetOrPostRequired("GET或者POST必须选择一种",500),
+    ConfigMsgRequired("Net对象未创建",500),
+    GetPostOne("GET和POST只能选择一种",500),
+    UploadFileRequiredPostRequest("上传文件必须是POST请求",500),
+    UploadFileTypeRequired("上传文件参数类型必须是java.io.File类型",500);
 
     ErrorCode(String name,int code){
         this.name = name;

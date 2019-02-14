@@ -5,6 +5,7 @@ import android.os.SystemClock;
 import com.twy.network.interfaces.DataListener;
 import com.twy.network.interfaces.HttpService;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.util.Map;
@@ -77,6 +78,11 @@ public class OkHttpService  extends HttpService {
             e.printStackTrace();//响应失败了，进行响应操作
             listener.onError(e);
         }
+    }
+
+    @Override
+    public void excuteUploadFileRequest(Map<String, String> headers, String params, File file, DataListener listener) {
+
     }
 
     @Override

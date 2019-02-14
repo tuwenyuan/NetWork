@@ -30,10 +30,11 @@ import java.util.concurrent.FutureTask;
 public class Observable<T> {
     public GET get;
     public POST post;
-    public List<Query> paramNames = new ArrayList<>();
+    public List<Object> paramNames = new ArrayList<>();
     public Object[] paramValues;
     public String[] headers;//[ache-Control: max-age=640000,ache-Control: max-age=640000]
     public Type type;
+    public boolean isMultipart;
     /*private FutureTask futureTask = null;
     private HttpTask httpTask;*/
 

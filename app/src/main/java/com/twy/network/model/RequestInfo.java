@@ -1,5 +1,6 @@
 package com.twy.network.model;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,6 +13,26 @@ public class RequestInfo {
     private String url;
     private Map<String,String> params = new HashMap<>();
     private Map<String,String> heads = new HashMap<>();
+    private boolean isMultipart;//是否上传文件标识
+    private File file;
+
+
+    public File getFile() {
+        return file;
+    }
+
+    public void setFile(File file) {
+        this.file = file;
+    }
+
+
+    public boolean isMultipart() {
+        return isMultipart;
+    }
+
+    public void setMultipart(boolean multipart) {
+        isMultipart = multipart;
+    }
 
     public Map<String, String> getHeads() {
         return heads;

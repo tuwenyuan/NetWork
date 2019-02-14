@@ -6,6 +6,7 @@ import android.os.Looper;
 import com.twy.network.model.HttpMethod;
 import com.twy.network.model.RequestInfo;
 
+import java.io.File;
 import java.util.Map;
 
 /**
@@ -26,7 +27,11 @@ public abstract class HttpService implements IHttpService {
         if (requestInfo.getMethod().equals(HttpMethod.GET)) {
             excuteGetRequest(headers,createParams(),listener);
         } else {
-            excutePostRequest(headers,createParams(),listener);
+            if(requestInfo.isMultipart() && requestInfo.getFile()!=null){
+                excuteUploadFileRequest(headers,createParams(),requestInfo.getFile(),listener);
+            }else{
+                excutePostRequest(headers,createParams(),listener);
+            }
         }
     }
 
@@ -63,6 +68,15 @@ public abstract class HttpService implements IHttpService {
      * @param listener 请求成功或者失败回调
      */
     public abstract void excutePostRequest(Map<String,String> headers,String params,DataListener listener);
+
+    /**
+     * 上传文件
+     * @param headers 请求头
+     * @param params 请求参数
+     * @param file 要上传的文件
+     * @param listener 回调
+     */
+    public abstract void excuteUploadFileRequest(Map<String,String> headers, String params, File file, DataListener listener);
 
     public abstract void cancelRequest();
 

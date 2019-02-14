@@ -10,6 +10,7 @@ import android.util.Log;
 
 import com.twy.network.Exception.HttpException;
 import com.twy.network.interfaces.DataListener;
+import com.twy.network.interfaces.File;
 import com.twy.network.interfaces.HttpService;
 import com.twy.network.interfaces.OnRecvDataListener;
 import com.twy.network.interfaces.Query;
@@ -93,7 +94,6 @@ public class RequestManagerFragment extends Fragment {
             }
         };
         listener.setType(observable.type);
-
         try {
             if(Net.getInstance()==null){
                 throw new HttpException(ErrorCode.ConfigMsgRequired.getCode(),ErrorCode.ConfigMsgRequired.getName());
@@ -102,23 +102,40 @@ public class RequestManagerFragment extends Fragment {
                 throw new HttpException(ErrorCode.GetOrPostRequired.getCode(),ErrorCode.GetOrPostRequired.getName());
             }
 
-            //HttpService service = new DefaultHttpService();
+            if(observable.get!=null && observable.post!=null){
+                throw new HttpException(ErrorCode.GetPostOne.getCode(),ErrorCode.GetPostOne.getName());
+            }
+
+            if(observable.isMultipart){
+                if(observable.get!=null){
+                    throw new HttpException(ErrorCode.UploadFileRequiredPostRequest.getCode(),ErrorCode.UploadFileRequiredPostRequest.getName());
+                }
+            }
+
             HttpService service = Net.getInstance().getHttpService()==null?new DefaultHttpService():Net.getInstance().getHttpService();
             RequestInfo requestInfo = new RequestInfo();
             requestInfo.setMethod(observable.get==null? HttpMethod.POST:HttpMethod.GET);
+            requestInfo.setMultipart(observable.isMultipart);
             requestInfo.setUrl(Net.getInstance().getBaseUrl()+(observable.get==null?observable.post.value():observable.get.value()));
             if(observable.paramValues!=null){
                 Map<String,String> params = new HashMap<>();
                 for(int i = 0;i<observable.paramValues.length;i++){
-                    String value = observable.paramValues[i].toString();
-                    if(((Query)observable.paramNames.get(i)).encoded()){
-                        value = URLEncoder.encode(value,"UTF-8");
+                    if(observable.paramNames.get(i) instanceof Query){
+                        String value = observable.paramValues[i].toString();
+                        if(((Query)observable.paramNames.get(i)).encoded()){
+                            value = URLEncoder.encode(value,"UTF-8");
+                        }
+                        params.put(((Query)observable.paramNames.get(i)).value(),value);
+                    }else if(observable.paramNames.get(i) instanceof File){
+                        if(observable.paramValues[i] instanceof java.io.File){
+                            requestInfo.setFile((java.io.File) observable.paramValues[i]);
+                        }else if(observable.isMultipart){
+                            throw new HttpException(ErrorCode.UploadFileTypeRequired.getCode(),ErrorCode.UploadFileTypeRequired.getName());
+                        }
                     }
-                    params.put(((Query)observable.paramNames.get(i)).value(),value);
                 }
                 requestInfo.setParams(params);
             }
-
             if(observable.headers!=null){
                 Map<String,String> hds = new HashMap<>();
                 for(int i = 0;i<observable.headers.length;i++){
@@ -128,19 +145,16 @@ public class RequestManagerFragment extends Fragment {
             }
             service.setRequestInfo(requestInfo);
             requestHodler.setHttpService(service);
-
             requestHodler.getHttpService().setListener(listener);
-
             for(RequestHodler rg : requestHodlers){
                 if(rg.compareTo(requestHodler)==0){
-                    Log.i("twy","不请求");
+                    //Log.i("twy","不请求");
                     return;
                 }
             }
             requestHodlers.add(requestHodler);
             httpTask = new HttpTask(requestHodler);
             futureTask = new FutureTask<>(httpTask, null);
-            //httpTask.requestHodler.getHttpService().cancelRequest();
             ThreadPoolManager.getInstance().execte(futureTask);
         } catch (Exception e) {
             listener.onError(e);

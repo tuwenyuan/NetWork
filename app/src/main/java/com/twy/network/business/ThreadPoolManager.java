@@ -59,7 +59,7 @@ public class ThreadPoolManager {
                     /**
                      * 阻塞式函数
                      */
-                    Log.i(TAG,"等待队列     "+taskQuene.size());
+                    //Log.i(TAG,"等待队列     "+taskQuene.size());
                     futrueTask= (FutureTask) taskQuene.take();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -68,7 +68,7 @@ public class ThreadPoolManager {
                 {
                     threadPoolExecutor.execute(futrueTask);
                 }
-                Log.i(TAG,"线程池大小      "+threadPoolExecutor.getPoolSize());
+                //Log.i(TAG,"线程池大小      "+threadPoolExecutor.getPoolSize());
             }
         }
     };
