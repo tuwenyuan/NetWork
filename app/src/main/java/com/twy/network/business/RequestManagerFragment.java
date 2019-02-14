@@ -120,7 +120,7 @@ public class RequestManagerFragment extends Fragment {
             if(observable.paramValues!=null){
                 Map<String,String> params = new HashMap<>();
                 for(int i = 0;i<observable.paramValues.length;i++){
-                    if(observable.paramNames.get(i) instanceof Query){
+                    if(observable.paramNames.get(i) instanceof Query && observable.paramValues[i]!=null){
                         String value = observable.paramValues[i].toString();
                         if(((Query)observable.paramNames.get(i)).encoded()){
                             value = URLEncoder.encode(value,"UTF-8");

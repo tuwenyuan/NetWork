@@ -15,7 +15,6 @@ public interface ITestServices {
     Observable<User> getUserPost(@Query(value = "userName",encoded = true) String userName, @Query("password") String password);
     @GET("servlet/GetUser")
     Observable<User> getUserGet(@Query(value = "userName",encoded = true) String userName, @Query("password") String password);
-
     @Multipart
     @POST("servlet/UploadFile")
     Observable<CommBean> uploadFile(@Query(value = "params",encoded = true) String params, @File java.io.File file);

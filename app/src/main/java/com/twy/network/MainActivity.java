@@ -68,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
         if(getCrashReportFiles()==null){
             saveCrashInfo2File(new Exception("故意发生错误"));
         }
+        //存在的文件
         File file = new File(getFilesDir() + "/crash",getCrashReportFiles()[0]);
         Net.startRequestData(this, services.uploadFile("sss", file), new OnRecvDataListener<CommBean>() {
             @Override
@@ -84,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
 
     ITestServices services;
     private void getUserGet(){
-        Net.startRequestData(this, services.getUserPost("涂文远", "123456"), new OnRecvDataListener<User>() {
+        Net.startRequestData(this, services.getUserPost(null, null), new OnRecvDataListener<User>() {
             @Override
             public void onStart() {
                 Log.i("twy",Thread.currentThread().getName()+"***onStart");

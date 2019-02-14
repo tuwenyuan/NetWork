@@ -103,27 +103,27 @@ public class DefaultHttpService extends HttpService {
         DataOutputStream dos = null;
         try {
             URL url = new URL(requestInfo.getUrl().contains("?")?requestInfo.getUrl()+"&"+params:requestInfo.getUrl()+"?"+params);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            urlConn = (HttpURLConnection) url.openConnection();
             //添加请求头
             if(headers!=null) {
                 for (String key : headers.keySet()) {
-                    conn.setRequestProperty(key, requestInfo.getHeads().get(key));
+                    urlConn.setRequestProperty(key, requestInfo.getHeads().get(key));
                 }
             }
-            conn.setReadTimeout(100000000);
-            conn.setConnectTimeout(100000000);
-            conn.setDoInput(true); // 允许输入流
-            conn.setDoOutput(true); // 允许输出流
-            conn.setUseCaches(false); // 不允许使用缓存
-            conn.setRequestMethod("POST"); // 请求方式
-            conn.setRequestProperty("Charset", "utf-8"); // 设置编码
-            conn.setRequestProperty("connection", "keep-alive");
-            conn.setRequestProperty("Content-Type", "multipart/form-data;boundary="+ BOUNDARY);
-            conn.getOutputStream().write(params.getBytes("utf-8"));
+            urlConn.setReadTimeout(100000000);
+            urlConn.setConnectTimeout(100000000);
+            urlConn.setDoInput(true); // 允许输入流
+            urlConn.setDoOutput(true); // 允许输出流
+            urlConn.setUseCaches(false); // 不允许使用缓存
+            urlConn.setRequestMethod("POST"); // 请求方式
+            urlConn.setRequestProperty("Charset", "utf-8"); // 设置编码
+            urlConn.setRequestProperty("connection", "keep-alive");
+            urlConn.setRequestProperty("Content-Type", "multipart/form-data;boundary="+ BOUNDARY);
+            urlConn.getOutputStream().write(params.getBytes("utf-8"));
             /**
              * 当文件不为空，把文件包装并且上传
              */
-            OutputStream outputSteam = conn.getOutputStream();
+            OutputStream outputSteam = urlConn.getOutputStream();
 
             dos = new DataOutputStream(outputSteam);
             StringBuffer sb = new StringBuffer();
@@ -151,10 +151,10 @@ public class DefaultHttpService extends HttpService {
             /**
              * 获取响应码 200=成功 当响应成功，获取响应的流
              */
-            int res = conn.getResponseCode();
+            int res = urlConn.getResponseCode();
             if (res == 200) {
                 //return SUCCESS;
-                BufferedReader bis = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"));
+                BufferedReader bis = new BufferedReader(new InputStreamReader(urlConn.getInputStream(), "utf-8"));
 
                 StringBuilder sb1 = new StringBuilder();
                 String lines;
@@ -163,7 +163,7 @@ public class DefaultHttpService extends HttpService {
                 }
                 final String finalLines = sb1.toString();
                 listener.converter(finalLines);
-                conn.disconnect();
+                urlConn.disconnect();
             }
         } catch (Exception e) {
             e.printStackTrace();
