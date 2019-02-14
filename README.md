@@ -28,10 +28,13 @@ https://github.com/tuwenyuan/NetWork/blob/master/network.jar
 #### 请求数据封装
 
     public interface ITestServices {
-        @POST("user2")
+        @POST("servlet/GetUser")
         Observable<User> getUserPost(@Query(value = "userName",encoded = true) String userName, @Query("password") String password);
-        @GET("user2")
+        @GET("servlet/GetUser")
         Observable<User> getUserGet(@Query(value = "userName",encoded = true) String userName, @Query("password") String password);
+        @Multipart
+        @POST("servlet/UploadFile")
+        Observable<CommBean> uploadFile(@Query(value = "params",encoded = true) String params, @File java.io.File file);
     }
 
 #### 初始化信息
@@ -65,5 +68,24 @@ https://github.com/tuwenyuan/NetWork/blob/master/network.jar
             Log.i("twy",Thread.currentThread().getName()+"***onRecvData"+"***"+data.userName+"::::"+data.password+"");
         }
     }); 
+    
+#### 上传文件
+
+    //存在的文件
+    File file = new File(具体文件所在的路径);
+    Net.startRequestData(this, services.uploadFile("sss", file), new OnRecvDataListener<CommBean>() {
+        @Override
+        public void onRecvData(CommBean data) {
+            Log.i("twy",data.toString());
+        }
+
+        @Override
+        public void onError(Exception e) {
+            e.printStackTrace();
+        }
+    });
+    
+    
+    
 
 ![pinned_selection_listview](https://github.com/tuwenyuan/NetWork/blob/master/app/src/main/res/mipmap-xxxhdpi/net.png)
