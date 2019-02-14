@@ -12,6 +12,7 @@ import com.twy.network.business.Net;
 import com.twy.network.business.OkHttpService;
 import com.twy.network.interfaces.ITestServices;
 import com.twy.network.interfaces.OnRecvDataListener;
+import com.twy.network.model.CommBean;
 import com.twy.network.model.User;
 
 import java.io.File;
@@ -68,9 +69,9 @@ public class MainActivity extends AppCompatActivity {
             saveCrashInfo2File(new Exception("故意发生错误"));
         }
         File file = new File(getFilesDir() + "/crash",getCrashReportFiles()[0]);
-        Net.startRequestData(this, services.uploadFile("sss", file), new OnRecvDataListener() {
+        Net.startRequestData(this, services.uploadFile("sss", file), new OnRecvDataListener<CommBean>() {
             @Override
-            public void onRecvData(Object data) {
+            public void onRecvData(CommBean data) {
                 Log.i("twy",data.toString());
             }
 
