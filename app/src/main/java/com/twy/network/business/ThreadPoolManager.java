@@ -27,7 +27,7 @@ public class ThreadPoolManager {
     }
     private ThreadPoolManager()
     {
-        threadPoolExecutor=new ThreadPoolExecutor(4,10,10, TimeUnit.SECONDS,new ArrayBlockingQueue<Runnable>(4), handler);
+        threadPoolExecutor=new ThreadPoolExecutor(2,Integer.MAX_VALUE,60, TimeUnit.SECONDS,new ArrayBlockingQueue<Runnable>(4), handler);
         threadPoolExecutor.execute(runable);
     }
 

@@ -1,13 +1,8 @@
 package com.twy.network.business;
 
-import android.os.Handler;
-import android.os.Looper;
-import android.os.SystemClock;
-
 import com.twy.network.Exception.HttpException;
 import com.twy.network.interfaces.DataListener;
 import com.twy.network.interfaces.HttpService;
-import com.twy.network.model.HttpMethod;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -18,7 +13,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 import java.util.UUID;
@@ -66,13 +60,21 @@ public class DefaultHttpService extends HttpService {
     @Override
     public void excutePostRequest(Map<String, String> headers, String params, final DataListener listener) {
         try{
-            urlConn = createPostRequest(params);
+            //urlConn = createPostRequest(params);
+
+            URL getUrl = new URL(requestInfo.getUrl());
+            urlConn = (HttpURLConnection) getUrl.openConnection();
+            urlConn.setDoOutput(true);
+            urlConn.setConnectTimeout(10000);
+            urlConn.setRequestMethod("POST");
+
             //添加请求头
             if(headers!=null) {
                 for (String key : headers.keySet()) {
                     urlConn.setRequestProperty(key, requestInfo.getHeads().get(key));
                 }
             }
+            urlConn.getOutputStream().write(params.getBytes("utf-8"));
             int responseCode = urlConn.getResponseCode();
             if (responseCode < 200 || responseCode >= 300) {
                 urlConn.disconnect();
@@ -188,7 +190,7 @@ public class DefaultHttpService extends HttpService {
             urlConn.disconnect();
     }
 
-    private HttpURLConnection createPostRequest(String params) throws IOException {
+    /*private HttpURLConnection createPostRequest(String params) throws IOException {
         URL getUrl = new URL(requestInfo.getUrl());
         HttpURLConnection urlConn = (HttpURLConnection) getUrl.openConnection();
         urlConn.setDoOutput(true);
@@ -196,7 +198,7 @@ public class DefaultHttpService extends HttpService {
         urlConn.setRequestMethod("POST");
         urlConn.getOutputStream().write(params.getBytes("utf-8"));
         return urlConn;
-    }
+    }*/
 
     private HttpURLConnection createGetRequest(String params) throws IOException {
         StringBuilder builder = new StringBuilder(requestInfo.getUrl());

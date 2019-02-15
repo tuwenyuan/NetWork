@@ -1,13 +1,9 @@
 package com.twy.network.business;
 
-import android.util.Log;
-
-import com.twy.network.interfaces.File;
 import com.twy.network.interfaces.GET;
 import com.twy.network.interfaces.Headers;
 import com.twy.network.interfaces.Multipart;
 import com.twy.network.interfaces.POST;
-import com.twy.network.interfaces.Query;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
@@ -86,7 +82,7 @@ public class MyProxyView  implements InvocationHandler {
                     Query q = (Query) annotation;
                     qs.add(q);
                 }*/
-                /*else if(File.class.equals(annotation.annotationType())){
+                /*else if(FileType.class.equals(annotation.annotationType())){
                     qs.add(annotation);
                 }*/
                 qs.add(annotation);

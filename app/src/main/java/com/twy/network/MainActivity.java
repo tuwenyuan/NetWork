@@ -194,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
         java.io.File filesDir = new java.io.File(getFilesDir() + "/crash");
         // 实现FilenameFilter接口的类实例可用于过滤器文件名
         FilenameFilter filter = new FilenameFilter() {
-            // accept(File dir, String name)
+            // accept(FileType dir, String name)
             // 测试指定文件是否应该包含在某一文件列表中。
             public boolean accept(java.io.File dir, String name) {
                 return name.endsWith("-test.cr");

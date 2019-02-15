@@ -5,12 +5,10 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 
 import com.twy.network.Exception.HttpException;
 import com.twy.network.interfaces.DataListener;
-import com.twy.network.interfaces.File;
+import com.twy.network.interfaces.FileType;
 import com.twy.network.interfaces.HttpService;
 import com.twy.network.interfaces.OnRecvDataListener;
 import com.twy.network.interfaces.Query;
@@ -101,17 +99,14 @@ public class RequestManagerFragment extends Fragment {
             if(observable.get==null && observable.post==null){
                 throw new HttpException(ErrorCode.GetOrPostRequired.getCode(),ErrorCode.GetOrPostRequired.getName());
             }
-
             if(observable.get!=null && observable.post!=null){
                 throw new HttpException(ErrorCode.GetPostOne.getCode(),ErrorCode.GetPostOne.getName());
             }
-
             if(observable.isMultipart){
                 if(observable.get!=null){
                     throw new HttpException(ErrorCode.UploadFileRequiredPostRequest.getCode(),ErrorCode.UploadFileRequiredPostRequest.getName());
                 }
             }
-
             HttpService service = Net.getInstance().getHttpService()==null?new DefaultHttpService():Net.getInstance().getHttpService();
             RequestInfo requestInfo = new RequestInfo();
             requestInfo.setMethod(observable.get==null? HttpMethod.POST:HttpMethod.GET);
@@ -126,7 +121,7 @@ public class RequestManagerFragment extends Fragment {
                             value = URLEncoder.encode(value,"UTF-8");
                         }
                         params.put(((Query)observable.paramNames.get(i)).value(),value);
-                    }else if(observable.paramNames.get(i) instanceof File){
+                    }else if(observable.paramNames.get(i) instanceof FileType){
                         if(observable.paramValues[i] instanceof java.io.File){
                             requestInfo.setFile((java.io.File) observable.paramValues[i]);
                         }else if(observable.isMultipart){
