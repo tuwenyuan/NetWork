@@ -32,18 +32,15 @@ public final class Net {
         return httpService;
     }
 
-    public void setHttpService(HttpService httpService) {
-        this.httpService = httpService;
-    }
-
     public Converter.Factory getConverFactory() {
         return converFactory;
     }
 
     private Converter.Factory converFactory;
-    Net(String baseUrl,Converter.Factory converFactory){
+    Net(String baseUrl,Converter.Factory converFactory,HttpService service){
         this.baseUrl = baseUrl;
         this.converFactory = converFactory;
+        this.httpService = service;
     }
     public final static class Builder{
         private String baseUrl;
@@ -68,7 +65,7 @@ public final class Net {
             if(baseUrl == null){
                 throw new IllegalStateException("Base URL required.");
             }
-            net = new Net(baseUrl,converFactory);
+            net = new Net(baseUrl,converFactory,service);
             return net;
         }
     }
