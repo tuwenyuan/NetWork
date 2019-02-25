@@ -39,13 +39,14 @@ public class MainActivity extends AppCompatActivity {
         btn_post.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                getUserPost();
+                getUserGet();
             }
         });
         btn_get.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 getUserGet();
+                getUserPost();
             }
         });
         btn_upload.setOnClickListener(new View.OnClickListener() {
@@ -58,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
         //.setHttpService(new OkHttpService())
         Net net = new Net.Builder()
                 .setConverterFactory(new ResponseConvertFactory(new Gson()))
-                .baseUrl("http://94.191.92.69/Upload/")
+                .baseUrl("http://94.191.92.69:8080/Upload/")
                 .setHttpService(new OkHttpService())
                 .build();
         services = net.create(ITestServices.class);
@@ -85,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
 
     ITestServices services;
     private void getUserGet(){
-        Net.startRequestData(this, services.getUserPost(null, null), new OnRecvDataListener<User>() {
+        Net.startRequestData(this, services.getUserGet(null, null), new OnRecvDataListener<User>() {
             @Override
             public void onStart() {
                 Log.i("twy",Thread.currentThread().getName()+"***onStart");
@@ -109,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getUserPost(){
-        Net.startRequestData(this, services.getUserPost("涂文远", "123456"), new OnRecvDataListener<User>() {
+        Net.startRequestData( services.getUserPost("涂文远", "123456"), new OnRecvDataListener<User>() {
             @Override
             public void onStart() {
                 Log.i("twy",Thread.currentThread().getName()+"***onStart");

@@ -27,6 +27,7 @@ public abstract class DataListener<M> {
         } catch (IOException e) {
             e.printStackTrace();
             onError(e);
+            onComplate();
         }
     }
 

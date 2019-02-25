@@ -1,6 +1,6 @@
 package com.twy.network.interfaces;
 
-import com.twy.network.model.RequestInfo;
+import com.twy.network.business.RequestHodler;
 
 
 /**
@@ -9,21 +9,11 @@ import com.twy.network.model.RequestInfo;
  */
 public interface IHttpService {
 
-    /**
-     * 设置请求数据
-     * @param requestInfo
-     */
-    void setRequestInfo(RequestInfo requestInfo);
 
     /**
      * 执行获取网络
      */
-    void excute();
+    void excute(RequestHodler requestHodler);
 
-    /**
-     * 设置处理接口
-     * @param httpListener
-     */
-    void setListener(DataListener httpListener);
 
 }

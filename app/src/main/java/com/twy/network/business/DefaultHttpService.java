@@ -1,5 +1,6 @@
 package com.twy.network.business;
 
+
 import com.twy.network.Exception.HttpException;
 import com.twy.network.interfaces.DataListener;
 import com.twy.network.interfaces.HttpService;
@@ -14,6 +15,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -22,19 +26,49 @@ import java.util.UUID;
  * PS: Not easy to write code, please indicate.
  */
 public class DefaultHttpService extends HttpService {
+    Map<String,List<HttpURLConnection>> map = new HashMap<>();
 
-    HttpURLConnection urlConn = null;
+    //HttpURLConnection urlConn = null;
 
     @Override
     public void excuteGetRequest(Map<String, String> headers, String params, final DataListener listener) {
+        HttpURLConnection urlConn = null;
         try{
-            urlConn = createGetRequest(params);
+            StringBuilder builder = new StringBuilder(requestInfo.getUrl());
+            if (params.length() > 0) {
+                if(requestInfo.getUrl().contains("?")){
+                    builder.append("&").append(params);
+                }else{
+                    builder.append("?").append(params);
+                }
+            }
+            String url = builder.toString();
+            URL getUrl = new URL(url);
+            urlConn = (HttpURLConnection) getUrl.openConnection();
+
+            if(fragmentToString!=null){
+                if(map.get(fragmentToString)==null){
+                    List<HttpURLConnection> list = new ArrayList<>();
+                    list.add(urlConn);
+                    map.put(fragmentToString,list);
+                }else {
+                    map.get(fragmentToString).add(urlConn);
+                }
+            }
+
+
+            urlConn.setDoInput(true);
+            urlConn.setUseCaches(false);
+            urlConn.setConnectTimeout(10000);
+            urlConn.setRequestMethod("GET");
             //添加请求头
             if(headers!=null) {
                 for (String key : headers.keySet()) {
                     urlConn.setRequestProperty(key, requestInfo.getHeads().get(key));
                 }
             }
+            urlConn.connect();
+
             int responseCode = urlConn.getResponseCode();
             if (responseCode < 200 || responseCode >= 300) {
                 urlConn.disconnect();
@@ -49,21 +83,36 @@ public class DefaultHttpService extends HttpService {
                 sb.append(lines);
             }
             final String finalLines = sb.toString();
+            cacel(urlConn);
             listener.converter(finalLines);
             urlConn.disconnect();
         }catch (final Exception e){
             listener.onError(e);
             listener.onComplate();
+            if(urlConn!=null)
+                cacel(urlConn);
         }
     }
 
     @Override
     public void excutePostRequest(Map<String, String> headers, String params, final DataListener listener) {
+        HttpURLConnection urlConn = null;
         try{
             //urlConn = createPostRequest(params);
 
             URL getUrl = new URL(requestInfo.getUrl());
             urlConn = (HttpURLConnection) getUrl.openConnection();
+
+            if(fragmentToString!=null){
+                if(map.get(fragmentToString)==null){
+                    List<HttpURLConnection> list = new ArrayList<>();
+                    list.add(urlConn);
+                    map.put(fragmentToString,list);
+                }else {
+                    map.get(fragmentToString).add(urlConn);
+                }
+            }
+
             urlConn.setDoOutput(true);
             urlConn.setConnectTimeout(10000);
             urlConn.setRequestMethod("POST");
@@ -89,13 +138,18 @@ public class DefaultHttpService extends HttpService {
                 sb.append(lines);
             }
             final String finalLines = sb.toString();
+            cacel(urlConn);
             listener.converter(finalLines);
             urlConn.disconnect();
         }catch (final Exception e){
             listener.onError(e);
             listener.onComplate();
+            if(urlConn!=null)
+                cacel(urlConn);
         }
     }
+
+
 
     @Override
     public void excuteUploadFileRequest(Map<String, String> headers, String params, File file, DataListener listener) {
@@ -103,9 +157,19 @@ public class DefaultHttpService extends HttpService {
         String PREFIX = "--", LINE_END = "\r\n";
         InputStream is = null;
         DataOutputStream dos = null;
+        HttpURLConnection urlConn = null;
         try {
             URL url = new URL(requestInfo.getUrl().contains("?")?requestInfo.getUrl()+"&"+params:requestInfo.getUrl()+"?"+params);
             urlConn = (HttpURLConnection) url.openConnection();
+            if(fragmentToString!=null){
+                if(map.get(fragmentToString)==null){
+                    List<HttpURLConnection> list = new ArrayList<>();
+                    list.add(urlConn);
+                    map.put(fragmentToString,list);
+                }else {
+                    map.get(fragmentToString).add(urlConn);
+                }
+            }
             //添加请求头
             if(headers!=null) {
                 for (String key : headers.keySet()) {
@@ -164,11 +228,14 @@ public class DefaultHttpService extends HttpService {
                     sb1.append(lines);
                 }
                 final String finalLines = sb1.toString();
+                cacel(urlConn);
                 listener.converter(finalLines);
                 urlConn.disconnect();
             }
         } catch (Exception e) {
             e.printStackTrace();
+            listener.onError(e);
+            cacel(urlConn);
         }finally {
             try {
                 dos.close();
@@ -186,8 +253,23 @@ public class DefaultHttpService extends HttpService {
 
     @Override
     public void cancelRequest() {
-        if(urlConn!=null)
-            urlConn.disconnect();
+        if(map.get(fragmentToString)!=null){
+            for(HttpURLConnection urlConnection : map.get(fragmentToString)){
+                urlConnection.disconnect();
+                map.get(fragmentToString).remove(urlConnection);
+            }
+            map.remove(fragmentToString);
+        }
+    }
+
+    private void cacel(HttpURLConnection urlConn){
+        if(fragmentToString!=null && map.get(fragmentToString)!=null){
+            if(map.get(fragmentToString).size()==1){
+                map.remove(fragmentToString);
+            }else{
+                map.get(fragmentToString).remove(urlConn);
+            }
+        }
     }
 
     /*private HttpURLConnection createPostRequest(String params) throws IOException {
@@ -200,7 +282,7 @@ public class DefaultHttpService extends HttpService {
         return urlConn;
     }*/
 
-    private HttpURLConnection createGetRequest(String params) throws IOException {
+    /*private HttpURLConnection createGetRequest(String params) throws IOException {
         StringBuilder builder = new StringBuilder(requestInfo.getUrl());
         if (params.length() > 0) {
             if(requestInfo.getUrl().contains("?")){
@@ -218,6 +300,6 @@ public class DefaultHttpService extends HttpService {
         urlConn.setRequestMethod("GET");
         urlConn.connect();
         return urlConn;
-    }
+    }*/
 
 }

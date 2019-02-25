@@ -2,23 +2,41 @@ package com.twy.network.business;
 
 import android.support.annotation.NonNull;
 
+import com.twy.network.interfaces.DataListener;
 import com.twy.network.interfaces.HttpService;
+import com.twy.network.model.RequestInfo;
 
 /**
  * Author by twy, Email 499216359@qq.com, Date on 2019/1/8.
  * PS: Not easy to write code, please indicate.
  */
 public class RequestHodler implements Comparable<RequestHodler> {
-    /**
-     * 执行下载类
-     */
-    private HttpService httpService;
-    public HttpService getHttpService() {
-        return httpService;
+    private RequestInfo requestInfo;
+    private DataListener listener;
+    private String fragmentToString;
+
+    public String getFragment() {
+        return fragmentToString;
     }
 
-    public void setHttpService(HttpService httpService) {
-        this.httpService = httpService;
+    public void setFragment(String fragmentToString) {
+        this.fragmentToString = fragmentToString;
+    }
+
+    public RequestInfo getRequestInfo() {
+        return requestInfo;
+    }
+
+    public void setRequestInfo(RequestInfo requestInfo) {
+        this.requestInfo = requestInfo;
+    }
+
+    public DataListener getListener() {
+        return listener;
+    }
+
+    public void setListener(DataListener listener) {
+        this.listener = listener;
     }
 
     /**
@@ -28,10 +46,10 @@ public class RequestHodler implements Comparable<RequestHodler> {
      */
     @Override
     public int compareTo(@NonNull RequestHodler requestHodler) {
-        if(httpService.getRequestInfo().getUrl().equals(requestHodler.getHttpService().getRequestInfo().getUrl())){
-            if(httpService.getRequestInfo().getParams().size() == requestHodler.getHttpService().getRequestInfo().getParams().size()){
-                for (String key : httpService.getRequestInfo().getParams().keySet()) {
-                    if(!httpService.getRequestInfo().getParams().get(key).equals(requestHodler.getHttpService().getRequestInfo().getParams().get(key))){
+        if(requestInfo.getUrl().equals(requestHodler.requestInfo.getUrl())){
+            if(requestInfo.getParams().size() == requestHodler.requestInfo.getParams().size()){
+                for (String key : requestInfo.getParams().keySet()) {
+                    if(!requestInfo.getParams().get(key).equals(requestHodler.requestInfo.getParams().get(key))){
                         return -1;
                     }
                 }

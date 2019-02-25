@@ -1,8 +1,8 @@
 package com.twy.network.interfaces;
 
-import android.os.Handler;
-import android.os.Looper;
 
+
+import com.twy.network.business.RequestHodler;
 import com.twy.network.model.HttpMethod;
 import com.twy.network.model.RequestInfo;
 
@@ -15,43 +15,28 @@ import java.util.Map;
  */
 public abstract class HttpService implements IHttpService {
     protected RequestInfo requestInfo;
-    protected DataListener listener;
+    protected String fragmentToString;
 
     /**
      * 注：这里是在子线程里面执行
      */
     @Override
-    public void excute() {
-        listener.onStart();
+    public void excute(RequestHodler requestHodler) {
+        requestInfo = requestHodler.getRequestInfo();
+        fragmentToString = requestHodler.getFragment();
+        requestHodler.getListener().onStart();
         Map<String,String> headers = requestInfo.getHeads().size()>0?requestInfo.getHeads():null;
         if (requestInfo.getMethod().equals(HttpMethod.GET)) {
-            excuteGetRequest(headers,createParams(),listener);
+            excuteGetRequest(headers,createParams(),requestHodler.getListener());
         } else {
             if(requestInfo.isMultipart() && requestInfo.getFile()!=null){
-                excuteUploadFileRequest(headers,createParams(),requestInfo.getFile(),listener);
+                excuteUploadFileRequest(headers,createParams(),requestInfo.getFile(),requestHodler.getListener());
             }else{
-                excutePostRequest(headers,createParams(),listener);
+                excutePostRequest(headers,createParams(),requestHodler.getListener());
             }
         }
     }
 
-    @Override
-    public void setRequestInfo(RequestInfo requestInfo) {
-        this.requestInfo = requestInfo;
-    }
-
-    public RequestInfo getRequestInfo() {
-        return requestInfo;
-    }
-
-    @Override
-    public void setListener(DataListener listener) {
-        this.listener = listener;
-    }
-
-    public DataListener getListener() {
-        return listener;
-    }
 
     /**
      * 执行get请求
