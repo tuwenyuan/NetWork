@@ -7,7 +7,7 @@ package com.twy.network.model;
 public class User {
     /*{"userName":"涂文远back","password":"123456back"}*/
     public String userName;
-    public String password;
+    public int password;
 
     @Override
     public String toString() {

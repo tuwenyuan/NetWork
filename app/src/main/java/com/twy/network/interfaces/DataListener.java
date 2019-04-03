@@ -24,7 +24,7 @@ public abstract class DataListener<M> {
         try {
             onRecvData((M)stringConverter.convert(result));
             onComplate();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             onError(e);
             onComplate();

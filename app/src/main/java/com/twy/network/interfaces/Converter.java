@@ -9,7 +9,7 @@ import java.lang.reflect.Type;
  * PS: Not easy to write code, please indicate.
  */
 public interface Converter<F,T> {
-    T convert(F value) throws IOException;
+    T convert(F value) throws Exception;
 
     abstract class Factory {
         public Converter<String, ?> responseBodyConverter(Type type) {

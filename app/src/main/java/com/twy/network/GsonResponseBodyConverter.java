@@ -21,7 +21,7 @@ public class GsonResponseBodyConverter<T> implements Converter<String ,T> {
     }
 
     @Override
-    public T convert(String value) throws IOException {
+    public T convert(String value) throws Exception {
         if(((Class) type).getName().equals("java.lang.String")) {
             return (T) value;
         }else{
