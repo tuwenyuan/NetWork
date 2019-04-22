@@ -25,7 +25,6 @@ import java.util.concurrent.FutureTask;
 public class StartRequestData {
     public Map<RequestHodler,FutureTask> map = new HashMap<>();
     protected Handler handler = new Handler(Looper.getMainLooper()) ;
-    private HttpService service = Net.getInstance().getHttpService()==null?new DefaultHttpService():Net.getInstance().getHttpService();
 
     public void startRequestNetData(RequestManagerFragment fragment, Observable observable, final OnRecvDataListener dataListener) {
         final RequestHodler requestHodler = new RequestHodler();
@@ -90,7 +89,21 @@ public class StartRequestData {
             RequestInfo requestInfo = new RequestInfo();
             requestInfo.setMethod(observable.get==null? HttpMethod.POST:HttpMethod.GET);
             requestInfo.setMultipart(observable.isMultipart);
-            requestInfo.setUrl(Net.getInstance().getBaseUrl()+(observable.get==null?observable.post.value():observable.get.value()));
+            String path;
+            if(observable.get!=null){
+                if(observable.get.value().startsWith("http")){
+                    path = observable.get.value();
+                }else {
+                    path = Net.getInstance().getBaseUrl()+ observable.get.value();
+                }
+            }else {
+                if(observable.post.value().startsWith("http")){
+                    path = observable.post.value();
+                }else {
+                    path = Net.getInstance().getBaseUrl()+ observable.post.value();
+                }
+            }
+            requestInfo.setUrl(path);
             if(observable.paramValues!=null){
                 Map<String,String> params = new HashMap<>();
                 for(int i = 0;i<observable.paramValues.length;i++){
@@ -146,7 +159,7 @@ public class StartRequestData {
                 if(ThreadPoolManager.getInstance().taskQuene.contains(map.get(rh))){
                     ThreadPoolManager.getInstance().removeTask(map.get(rh));
                 }else {
-                    service.cancelRequest();
+                    Net.getInstance().getHttpService().cancelRequest();
                 }
                 map.remove(rh);
             }

@@ -18,4 +18,7 @@ public interface ITestServices {
     @Multipart
     @POST("servlet/UploadFile")
     Observable<CommBean> uploadFile(@Query(value = "params",encoded = true) String params, @FileType java.io.File file);
+
+    @POST("http://tt.ugou88.com/ugou-wx/i/custom_page/getIndexPageData")
+    Observable<String> getIndexPageData(@Query(value = "pageNumber") int pageNumber,@Query("pageSize") int pageSize,@Query("pcid") int pcid,@Query("pid") int pid);
 }

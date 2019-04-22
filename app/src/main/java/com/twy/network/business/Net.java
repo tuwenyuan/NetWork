@@ -32,6 +32,9 @@ public final class Net {
     private HttpService httpService;
 
     public HttpService getHttpService() {
+        if(httpService==null){
+            httpService = new DefaultHttpService();
+        }
         return httpService;
     }
 

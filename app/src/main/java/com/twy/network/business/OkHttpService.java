@@ -9,6 +9,7 @@ import com.twy.network.interfaces.HttpService;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,9 +19,13 @@ import java.util.concurrent.TimeUnit;
 import okhttp3.Call;
 import okhttp3.FormBody;
 import okhttp3.Headers;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
+import okio.Buffer;
+import okio.BufferedSource;
 
 
 /**
@@ -62,16 +67,40 @@ public class OkHttpService  extends HttpService {
                 kvs.get(fragmentToString).add(call);
             }
         }
+
+        Response response = null;
         try {
-            Response response = call.execute();
-            final String result = response.body().string();
+            response=call.execute();
+            ResponseBody responseBody = response.body();
+            BufferedSource source = responseBody.source();
+            source.request(Long.MAX_VALUE);
+            Buffer buffer = source.buffer();
+            MediaType contentType = responseBody.contentType();
+            Charset charset = Charset.forName("UTF-8");
+            if (contentType != null) {
+                charset = contentType.charset( Charset.forName("UTF-8"));
+            }
+            if (responseBody.contentLength() != 0) {
+                String result  = buffer.readString(charset);
+                if(TextUtils.isEmpty(result)){
+                    listener.onError(new Exception("没有响应数据"));
+                    listener.onComplate();
+                }else{
+                    listener.converter(result);
+                }
+            }
             cacel(call);
-            listener.converter(result);
         } catch (final IOException e) {
             e.printStackTrace();
             cacel(call);
             listener.onError(e);
             listener.onComplate();
+        }finally {
+            try {
+                response.body().source().close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -104,17 +133,41 @@ public class OkHttpService  extends HttpService {
                 kvs.get(fragmentToString).add(call);
             }
         }
+
+        Response response = null;
         try {
-            Response response=call.execute();
-            final String result = URLDecoder.decode(response.body().string(),"UTF-8");
+            response=call.execute();
+            ResponseBody responseBody = response.body();
+            BufferedSource source = responseBody.source();
+            source.request(Long.MAX_VALUE);
+            Buffer buffer = source.buffer();
+            MediaType contentType = responseBody.contentType();
+            Charset charset = Charset.forName("UTF-8");
+            if (contentType != null) {
+                charset = contentType.charset( Charset.forName("UTF-8"));
+            }
+            if (responseBody.contentLength() != 0) {
+                String result  = buffer.readString(charset);
+                if(TextUtils.isEmpty(result)){
+                    listener.onError(new Exception("没有响应数据"));
+                    listener.onComplate();
+                }else{
+                    result = URLDecoder.decode(result,charset.name());
+                    listener.converter(result);
+                }
+            }
             cacel(call);
-            listener.converter(result);
-            //这里没有用call.enqueue方式连接，用了execute方式，都一样的，写法不一样而已，看个人喜欢
         } catch (final IOException e) {
-            e.printStackTrace();//响应失败了，进行响应操作
+            e.printStackTrace();
             cacel(call);
             listener.onError(e);
             listener.onComplate();
+        }finally {
+            try {
+                response.body().source().close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
