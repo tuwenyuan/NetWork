@@ -13,7 +13,7 @@
  
  4.和activity生命周期绑定了 页面销毁的时候做了善后工作
  
- 5.只需要实现HttpService 实现excuteGetRequest及excutePostRequest及cancelRequest 在初始化 setHttpService(HttpService) 下面OKHttpService是自己实现的 但注意的是该所有阿执行都是在子线程执行 自己必须保证同步执行
+ 5.只需要实现HttpService 实现excuteGetRequest及excutePostRequest及cancelRequest 在初始化 setHttpService(HttpService) 下面OKHttpService是自己实现的 但注意的是该所有执行都是在子线程执行 自己必须保证同步执行
 
     Net net = new Net.Builder()
                     .setConverterFactory(new ResponseConvertFactory(new Gson()))
