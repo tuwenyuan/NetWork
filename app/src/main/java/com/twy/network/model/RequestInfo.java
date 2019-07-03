@@ -15,7 +15,15 @@ public class RequestInfo {
     private Map<String,String> heads = new HashMap<>();
     private boolean isMultipart;//是否上传文件标识
     private File file;
+    private String bodyString;
 
+    public String getBodyString() {
+        return bodyString;
+    }
+
+    public void setBodyString(String bodyString) {
+        this.bodyString = bodyString;
+    }
 
     public File getFile() {
         return file;

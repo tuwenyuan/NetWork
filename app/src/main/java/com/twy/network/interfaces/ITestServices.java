@@ -1,5 +1,6 @@
 package com.twy.network.interfaces;
 
+import com.twy.network.User1;
 import com.twy.network.business.Observable;
 import com.twy.network.model.CommBean;
 import com.twy.network.model.User;
@@ -21,4 +22,7 @@ public interface ITestServices {
 
     @POST("http://tt.ugou88.com/ugou-wx/i/custom_page/getIndexPageData")
     Observable<String> getIndexPageData(@Query(value = "pageNumber") int pageNumber,@Query("pageSize") int pageSize,@Query("pcid") int pcid,@Query("pid") int pid);
+
+    @POST("http://39.108.81.229:8001/v1/api/account/logon")
+    Observable<String> logon(@Body User1 user);
 }

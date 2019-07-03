@@ -4,6 +4,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 import com.twy.network.Exception.HttpException;
+import com.twy.network.interfaces.Body;
 import com.twy.network.interfaces.DataListener;
 import com.twy.network.interfaces.FileType;
 import com.twy.network.interfaces.HttpService;
@@ -106,6 +107,7 @@ public class StartRequestData {
             requestInfo.setUrl(path);
             if(observable.paramValues!=null){
                 Map<String,String> params = new HashMap<>();
+                String bodyStr = null;
                 for(int i = 0;i<observable.paramValues.length;i++){
                     if(observable.paramNames.get(i) instanceof Query && observable.paramValues[i]!=null){
                         String value = observable.paramValues[i].toString();
@@ -119,9 +121,16 @@ public class StartRequestData {
                         }else if(observable.isMultipart){
                             throw new HttpException(ErrorCode.UploadFileTypeRequired.getCode(),ErrorCode.UploadFileTypeRequired.getName());
                         }
+                    }else if(observable.paramNames.get(i) instanceof Body){
+                        if(observable.post==null){
+                            throw new HttpException(ErrorCode.BodyInPostRequest.getCode(),ErrorCode.BodyInPostRequest.getName());
+                        }else {
+                            bodyStr = observable.paramValues[i].toString();
+                        }
                     }
                 }
                 requestInfo.setParams(params);
+                requestInfo.setBodyString(bodyStr);
             }
             if(observable.headers!=null){
                 Map<String,String> hds = new HashMap<>();

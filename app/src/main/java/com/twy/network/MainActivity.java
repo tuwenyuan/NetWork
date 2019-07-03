@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
         Net net = new Net.Builder()
                 .setConverterFactory(new ResponseConvertFactory(new Gson()))
                 .baseUrl("http://94.191.92.69:8080/Upload/")
-                .setHttpService(new OkHttpService())
+                //.setHttpService(new OkHttpService())
                 .build();
         services = net.create(ITestServices.class);
     }
@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getUserPost(){
-        Net.startRequestData( services.getUserPost("涂文远", "123456"), new OnRecvDataListener<User>() {
+        /*Net.startRequestData( services.getUserPost("涂文远", "123456"), new OnRecvDataListener<User1>() {
             @Override
             public void onStart() {
                 Log.i("twy",Thread.currentThread().getName()+"***onStart");
@@ -127,8 +127,22 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onRecvData(User data) {
+            public void onRecvData(User1 data) {
                 Log.i("twy",Thread.currentThread().getName()+"***onRecvData"+"***"+data.userName+"::::"+data.password+"");
+            }
+        });*/
+        User1 user = new User1();
+        user.loginId = "13025417416";
+        user.code = "1234";
+        Net.startRequestData(services.logon(user), new OnRecvDataListener<String>() {
+            @Override
+            public void onRecvData(String data) {
+                Log.i("twy",data);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.i("twy",Thread.currentThread().getName()+"***onError"+e.getMessage());
             }
         });
 

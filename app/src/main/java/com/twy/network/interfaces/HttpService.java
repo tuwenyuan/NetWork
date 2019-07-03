@@ -32,7 +32,7 @@ public abstract class HttpService implements IHttpService {
             if(requestInfo.isMultipart() && requestInfo.getFile()!=null){
                 excuteUploadFileRequest(headers,createParams(),requestInfo.getFile(),requestHodler.getListener());
             }else{
-                excutePostRequest(headers,createParams(),requestHodler.getListener());
+                excutePostRequest(headers,createParams(),requestHodler.getListener(),requestInfo.getBodyString());
             }
         }
     }
@@ -52,7 +52,7 @@ public abstract class HttpService implements IHttpService {
      * @param params 请求参数
      * @param listener 请求成功或者失败回调
      */
-    public abstract void excutePostRequest(Map<String,String> headers,String params,DataListener listener);
+    public abstract void excutePostRequest(Map<String,String> headers,String params,DataListener listener,String bodyStr);
 
     /**
      * 上传文件

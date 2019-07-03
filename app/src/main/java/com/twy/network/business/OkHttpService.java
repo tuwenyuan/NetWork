@@ -22,6 +22,7 @@ import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okio.Buffer;
@@ -105,16 +106,30 @@ public class OkHttpService  extends HttpService {
     }
 
     @Override
-    public void excutePostRequest(Map<String, String> map, String s, DataListener listener) {
-        FormBody.Builder fb = new FormBody.Builder();
-        if(!TextUtils.isEmpty(s)) {
-            for (String str : s.split("&")) {
-                fb.add(str.split("=")[0], str.split("=")[1]);
+    public void excutePostRequest(Map<String, String> map, String s, DataListener listener,String bodyStr) {
+        Request.Builder builder = new Request.Builder();
+        if(bodyStr==null){
+            FormBody.Builder fb = new FormBody.Builder();
+            if(!TextUtils.isEmpty(s)) {
+                for (String str : s.split("&")) {
+                    fb.add(str.split("=")[0], str.split("=")[1]);
+                }
+            }
+            builder.url(requestInfo.getUrl())
+                    .post(fb.build());
+        }else {
+            if(TextUtils.isEmpty(s)){
+                builder.url(requestInfo.getUrl())
+                        .post(RequestBody.create(MediaType.parse("application/json"),bodyStr));
+            }else {
+                builder.url(requestInfo.getUrl().contains("?")?requestInfo.getUrl()+"&"+s:requestInfo.getUrl()+"?"+s)
+                        .post(RequestBody.create(MediaType.parse("application/json"),bodyStr));
             }
         }
-        Request.Builder builder = new Request.Builder()
+
+        /*Request.Builder builder = new Request.Builder()
                 .url(requestInfo.getUrl())
-                .post(fb.build());
+                .post(fb.build());*/
         if(map!=null && map.size()>0){
             Headers.Builder builder1 = new Headers.Builder();
             for(String s1 : map.keySet()){

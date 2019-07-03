@@ -95,12 +95,12 @@ public class DefaultHttpService extends HttpService {
     }
 
     @Override
-    public void excutePostRequest(Map<String, String> headers, String params, final DataListener listener) {
+    public void excutePostRequest(Map<String, String> headers, String params, final DataListener listener,String bodyStr) {
         HttpURLConnection urlConn = null;
         try{
             //urlConn = createPostRequest(params);
 
-            URL getUrl = new URL(requestInfo.getUrl());
+            URL getUrl = new URL(bodyStr==null?requestInfo.getUrl():(requestInfo.getUrl().contains("?")?requestInfo.getUrl()+"&"+params:requestInfo.getUrl()+"?"+params));
             urlConn = (HttpURLConnection) getUrl.openConnection();
 
             if(fragmentToString!=null){
@@ -123,7 +123,12 @@ public class DefaultHttpService extends HttpService {
                     urlConn.setRequestProperty(key, requestInfo.getHeads().get(key));
                 }
             }
-            urlConn.getOutputStream().write(params.getBytes("utf-8"));
+            if(bodyStr==null){
+                urlConn.getOutputStream().write(params.getBytes("utf-8"));
+            }else {
+                urlConn.setRequestProperty("Content-Type", " application/json");
+                urlConn.getOutputStream().write(bodyStr.getBytes("utf-8"));
+            }
             int responseCode = urlConn.getResponseCode();
             if (responseCode < 200 || responseCode >= 300) {
                 urlConn.disconnect();

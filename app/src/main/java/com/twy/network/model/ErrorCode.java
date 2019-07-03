@@ -9,7 +9,8 @@ public enum ErrorCode {
     ConfigMsgRequired("Net对象未创建",500),
     GetPostOne("GET和POST只能选择一种",500),
     UploadFileRequiredPostRequest("上传文件必须是POST请求",500),
-    UploadFileTypeRequired("上传文件参数类型必须是java.io.File类型",500);
+    UploadFileTypeRequired("上传文件参数类型必须是java.io.File类型",500),
+    BodyInPostRequest("Body注解只能用于POST请求",500);
 
     ErrorCode(String name,int code){
         this.name = name;
