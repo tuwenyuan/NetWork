@@ -5,5 +5,5 @@ package com.twy.network.model;
  * PS: Not easy to write code, please indicate.
  */
 public enum HttpMethod {
-    GET,POST
+    GET,POST,PUT
 }

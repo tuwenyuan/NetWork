@@ -28,12 +28,14 @@ public abstract class HttpService implements IHttpService {
         Map<String,String> headers = requestInfo.getHeads().size()>0?requestInfo.getHeads():null;
         if (requestInfo.getMethod().equals(HttpMethod.GET)) {
             excuteGetRequest(headers,createParams(),requestHodler.getListener());
-        } else {
+        } else if(requestInfo.getMethod().equals(HttpMethod.POST)) {
             if(requestInfo.isMultipart() && requestInfo.getFile()!=null){
                 excuteUploadFileRequest(headers,createParams(),requestInfo.getFile(),requestHodler.getListener());
             }else{
                 excutePostRequest(headers,createParams(),requestHodler.getListener(),requestInfo.getBodyString());
             }
+        }else {
+            excutePutRequest(headers,createParams(),requestHodler.getListener(),requestInfo.getBodyString());
         }
     }
 
@@ -53,6 +55,15 @@ public abstract class HttpService implements IHttpService {
      * @param listener 请求成功或者失败回调
      */
     public abstract void excutePostRequest(Map<String,String> headers,String params,DataListener listener,String bodyStr);
+
+    /**
+     * 执行put请求
+     * @param headers
+     * @param params
+     * @param listener
+     * @param bodyStr
+     */
+    public abstract void excutePutRequest(Map<String,String> headers,String params,DataListener listener,String bodyStr);
 
     /**
      * 上传文件

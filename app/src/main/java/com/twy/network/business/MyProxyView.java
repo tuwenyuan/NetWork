@@ -4,6 +4,7 @@ import com.twy.network.interfaces.GET;
 import com.twy.network.interfaces.Headers;
 import com.twy.network.interfaces.Multipart;
 import com.twy.network.interfaces.POST;
+import com.twy.network.interfaces.PUT;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
@@ -68,6 +69,8 @@ public class MyProxyView  implements InvocationHandler {
                 returnObject.get = (GET) a;
             }else if(POST.class.equals(a.annotationType())){
                 returnObject.post = (POST) a;
+            }else if(PUT.class.equals(a.annotationType())){
+                returnObject.put = (PUT) a;
             }else if(Multipart.class.equals(a.annotationType())){
                 returnObject.isMultipart = true;
             }

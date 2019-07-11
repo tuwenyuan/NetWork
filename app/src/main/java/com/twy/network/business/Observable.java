@@ -8,6 +8,7 @@ import com.twy.network.interfaces.GET;
 import com.twy.network.interfaces.HttpService;
 import com.twy.network.interfaces.OnRecvDataListener;
 import com.twy.network.interfaces.POST;
+import com.twy.network.interfaces.PUT;
 import com.twy.network.interfaces.Query;
 import com.twy.network.model.ErrorCode;
 import com.twy.network.model.HttpMethod;
@@ -30,6 +31,7 @@ import java.util.concurrent.FutureTask;
 public class Observable<T> {
     public GET get;
     public POST post;
+    public PUT put;
     public List<Object> paramNames = new ArrayList<>();
     public Object[] paramValues;
     public String[] headers;//[ache-Control: max-age=640000,ache-Control: max-age=640000]

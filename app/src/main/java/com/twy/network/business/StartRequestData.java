@@ -76,10 +76,24 @@ public class StartRequestData {
             if(Net.getInstance()==null){
                 throw new HttpException(ErrorCode.ConfigMsgRequired.getCode(),ErrorCode.ConfigMsgRequired.getName());
             }
-            if(observable.get==null && observable.post==null){
+            if(observable.get==null && observable.post==null && observable.put==null){
                 throw new HttpException(ErrorCode.GetOrPostRequired.getCode(),ErrorCode.GetOrPostRequired.getName());
             }
-            if(observable.get!=null && observable.post!=null){
+            int i1 = 0;
+            HttpMethod httpMethod = HttpMethod.POST;
+            if(observable.get!=null){
+                httpMethod = HttpMethod.GET;
+                i1++;
+            }
+            if(observable.put!=null){
+                httpMethod = HttpMethod.PUT;
+                i1++;
+            }
+            if(observable.post!=null){
+                httpMethod = HttpMethod.POST;
+                i1++;
+            }
+            if(i1>1){
                 throw new HttpException(ErrorCode.GetPostOne.getCode(),ErrorCode.GetPostOne.getName());
             }
             if(observable.isMultipart){
@@ -88,7 +102,7 @@ public class StartRequestData {
                 }
             }
             RequestInfo requestInfo = new RequestInfo();
-            requestInfo.setMethod(observable.get==null? HttpMethod.POST:HttpMethod.GET);
+            requestInfo.setMethod(httpMethod);
             requestInfo.setMultipart(observable.isMultipart);
             String path;
             if(observable.get!=null){
@@ -97,11 +111,17 @@ public class StartRequestData {
                 }else {
                     path = Net.getInstance().getBaseUrl()+ observable.get.value();
                 }
-            }else {
+            }else if(observable.post!=null){
                 if(observable.post.value().startsWith("http")){
                     path = observable.post.value();
                 }else {
                     path = Net.getInstance().getBaseUrl()+ observable.post.value();
+                }
+            }else {
+                if(observable.put.value().startsWith("http")){
+                    path = observable.put.value();
+                }else {
+                    path = Net.getInstance().getBaseUrl()+ observable.put.value();
                 }
             }
             requestInfo.setUrl(path);
@@ -122,10 +142,10 @@ public class StartRequestData {
                             throw new HttpException(ErrorCode.UploadFileTypeRequired.getCode(),ErrorCode.UploadFileTypeRequired.getName());
                         }
                     }else if(observable.paramNames.get(i) instanceof Body){
-                        if(observable.post==null){
-                            throw new HttpException(ErrorCode.BodyInPostRequest.getCode(),ErrorCode.BodyInPostRequest.getName());
-                        }else {
+                        if(observable.post!=null || observable.put!=null){
                             bodyStr = observable.paramValues[i].toString();
+                        }else {
+                            throw new HttpException(ErrorCode.BodyInPostRequest.getCode(),ErrorCode.BodyInPostRequest.getName());
                         }
                     }
                 }
