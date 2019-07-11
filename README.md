@@ -28,14 +28,23 @@ https://github.com/tuwenyuan/NetWork/blob/master/network.jar
 #### 请求数据封装
 
     public interface ITestServices {
+        @Headers({"header1:header1value","header2:header2value"})
         @POST("servlet/GetUser")
         Observable<User> getUserPost(@Query(value = "userName",encoded = true) String userName, @Query("password") String password);
+        @Headers({"header1:header1value","header2:header2value"})
         @GET("servlet/GetUser")
         Observable<User> getUserGet(@Query(value = "userName",encoded = true) String userName, @Query("password") String password);
         @Multipart
         @POST("servlet/UploadFile")
-        Observable<CommBean> uploadFile(@Query(value = "params",encoded = true) String params, @File java.io.File file);
+        Observable<CommBean> uploadFile(@Query(value = "params",encoded = true) String params, @FileType java.io.File file);
+
+        @POST("http://tt.ugou88.com/ugou-wx/i/custom_page/getIndexPageData")
+        Observable<String> getIndexPageData(@Query(value = "pageNumber") int pageNumber,@Query("pageSize") int pageSize,@Query("pcid") int pcid,@Query("pid") int pid);
+
+        @POST("http://39.108.81.229:8001/v1/api/account/logon")
+        Observable<String> logon(@Body User1 user);
     }
+
 
 #### 初始化信息
 
@@ -82,6 +91,34 @@ https://github.com/tuwenyuan/NetWork/blob/master/network.jar
         @Override
         public void onError(Exception e) {
             e.printStackTrace();
+        }
+    });
+    
+    
+#### 参数上传json
+
+    public class User1 {
+        public String loginId;
+        public String code;
+
+        @Override
+        public String toString() {
+            Gson gson = new Gson();
+            return gson.toJson(this);
+        }
+    }
+    User1 user = new User1();
+    user.loginId = "13025417416";
+    user.code = "1234";
+    Net.startRequestData(services.logon(user), new OnRecvDataListener<String>() {
+        @Override
+        public void onRecvData(String data) {
+            Log.i("twy",data);
+        }
+
+        @Override
+        public void onError(Exception e) {
+            Log.i("twy",Thread.currentThread().getName()+"***onError"+e.getMessage());
         }
     });
     
