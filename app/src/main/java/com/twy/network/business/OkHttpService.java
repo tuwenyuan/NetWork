@@ -263,7 +263,6 @@ public class OkHttpService  extends HttpService {
                 response.body().source().close();
             } catch (IOException e) {
                 e.printStackTrace();
-
             }
         }
     }
