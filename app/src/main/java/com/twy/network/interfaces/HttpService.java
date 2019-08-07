@@ -34,8 +34,10 @@ public abstract class HttpService implements IHttpService {
             }else{
                 excutePostRequest(headers,createParams(),requestHodler.getListener(),requestInfo.getBodyString());
             }
-        }else {
+        }else if(requestInfo.getMethod().equals(HttpMethod.PUT)) {
             excutePutRequest(headers,createParams(),requestHodler.getListener(),requestInfo.getBodyString());
+        }else {
+            excuteDeleteRequest(headers,createParams(),requestHodler.getListener(),requestInfo.getBodyString());
         }
     }
 
@@ -64,6 +66,15 @@ public abstract class HttpService implements IHttpService {
      * @param bodyStr
      */
     public abstract void excutePutRequest(Map<String,String> headers,String params,DataListener listener,String bodyStr);
+
+    /**
+     * 执行delete请求
+     * @param headers
+     * @param params
+     * @param listener
+     * @param bodyStr
+     */
+    public abstract void excuteDeleteRequest(Map<String,String> headers,String params,DataListener listener,String bodyStr);
 
     /**
      * 上传文件

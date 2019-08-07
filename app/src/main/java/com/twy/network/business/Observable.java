@@ -3,6 +3,7 @@ package com.twy.network.business;
 import android.util.Log;
 
 import com.twy.network.Exception.HttpException;
+import com.twy.network.interfaces.DELETE;
 import com.twy.network.interfaces.DataListener;
 import com.twy.network.interfaces.GET;
 import com.twy.network.interfaces.HttpService;
@@ -32,6 +33,7 @@ public class Observable<T> {
     public GET get;
     public POST post;
     public PUT put;
+    public DELETE delete;
     public List<Object> paramNames = new ArrayList<>();
     public Object[] paramValues;
     public String[] headers;//[ache-Control: max-age=640000,ache-Control: max-age=640000]

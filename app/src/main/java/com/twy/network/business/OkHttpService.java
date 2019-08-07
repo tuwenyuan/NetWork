@@ -268,6 +268,89 @@ public class OkHttpService  extends HttpService {
     }
 
     @Override
+    public void excuteDeleteRequest(Map<String, String> map, String s, DataListener listener, String bodyStr) {
+        Request.Builder builder = new Request.Builder();
+        if(bodyStr==null){
+            /*FormBody.Builder fb = new FormBody.Builder();
+            if(!TextUtils.isEmpty(s)) {
+                for (String str : s.split("&")) {
+                    fb.add(str.split("=")[0], str.split("=")[1]);
+                }
+            }
+            builder.url(requestInfo.getUrl())
+                    .delete(fb.build());*/
+            builder.url(requestInfo.getUrl().contains("?")?requestInfo.getUrl()+"&"+s:requestInfo.getUrl()+"?"+s)
+                    .delete();
+        }else {
+            if(TextUtils.isEmpty(s)){
+                builder.url(requestInfo.getUrl())
+                        .delete(RequestBody.create(MediaType.parse("application/json"),bodyStr));
+            }else {
+                builder.url(requestInfo.getUrl().contains("?")?requestInfo.getUrl()+"&"+s:requestInfo.getUrl()+"?"+s)
+                        .delete(RequestBody.create(MediaType.parse("application/json"),bodyStr));
+            }
+        }
+        if(map!=null && map.size()>0){
+            Headers.Builder builder1 = new Headers.Builder();
+            for(String s1 : map.keySet()){
+                builder1.add(s1,map.get(s1));
+            }
+            builder.headers(builder1.build());
+        }
+        Request request = builder.build();
+        Call call = client.build().newCall(request);
+        if(fragmentToString!=null){
+            if(kvs.get(fragmentToString)==null){
+                List<Call> list = new ArrayList<>();
+                list.add(call);
+                kvs.put(fragmentToString,list);
+            }else {
+                kvs.get(fragmentToString).add(call);
+            }
+        }
+        Response response = null;
+        try {
+            response=call.execute();
+            if(response.code()==200){
+                ResponseBody responseBody = response.body();
+                BufferedSource source = responseBody.source();
+                source.request(Long.MAX_VALUE);
+                Buffer buffer = source.buffer();
+                MediaType contentType = responseBody.contentType();
+                Charset charset = Charset.forName("UTF-8");
+                if (contentType != null) {
+                    charset = contentType.charset( Charset.forName("UTF-8"));
+                }
+                if (responseBody.contentLength() != 0) {
+                    String result  = buffer.readString(charset);
+                    if(TextUtils.isEmpty(result)){
+                        listener.onError(new Exception("没有响应数据"));
+                        listener.onComplate();
+                    }else{
+                        result = URLDecoder.decode(result,charset.name());
+                        listener.converter(result);
+                    }
+                }
+            }else {
+                listener.onError(new Exception("responseCode::"+response.code()));
+                listener.onComplate();
+            }
+            cacel(call);
+        } catch (final IOException e) {
+            e.printStackTrace();
+            cacel(call);
+            listener.onError(e);
+            listener.onComplate();
+        }finally {
+            try {
+                response.body().source().close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
     public void excuteUploadFileRequest(Map<String, String> map, String s, File file, DataListener dataListener) {
 
     }

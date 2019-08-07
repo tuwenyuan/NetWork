@@ -1,5 +1,6 @@
 package com.twy.network.business;
 
+import com.twy.network.interfaces.DELETE;
 import com.twy.network.interfaces.GET;
 import com.twy.network.interfaces.Headers;
 import com.twy.network.interfaces.Multipart;
@@ -71,6 +72,8 @@ public class MyProxyView  implements InvocationHandler {
                 returnObject.post = (POST) a;
             }else if(PUT.class.equals(a.annotationType())){
                 returnObject.put = (PUT) a;
+            }else if(DELETE.class.equals(a.annotationType())){
+                returnObject.delete = (DELETE) a;
             }else if(Multipart.class.equals(a.annotationType())){
                 returnObject.isMultipart = true;
             }

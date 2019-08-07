@@ -7,7 +7,6 @@ import com.twy.network.Exception.HttpException;
 import com.twy.network.interfaces.Body;
 import com.twy.network.interfaces.DataListener;
 import com.twy.network.interfaces.FileType;
-import com.twy.network.interfaces.HttpService;
 import com.twy.network.interfaces.OnRecvDataListener;
 import com.twy.network.interfaces.Query;
 import com.twy.network.model.ErrorCode;
@@ -76,7 +75,7 @@ public class StartRequestData {
             if(Net.getInstance()==null){
                 throw new HttpException(ErrorCode.ConfigMsgRequired.getCode(),ErrorCode.ConfigMsgRequired.getName());
             }
-            if(observable.get==null && observable.post==null && observable.put==null){
+            if(observable.get==null && observable.post==null && observable.put==null && observable.delete==null){
                 throw new HttpException(ErrorCode.GetOrPostRequired.getCode(),ErrorCode.GetOrPostRequired.getName());
             }
             int i1 = 0;
@@ -91,6 +90,10 @@ public class StartRequestData {
             }
             if(observable.post!=null){
                 httpMethod = HttpMethod.POST;
+                i1++;
+            }
+            if(observable.delete!=null){
+                httpMethod = HttpMethod.DELETE;
                 i1++;
             }
             if(i1>1){
@@ -117,11 +120,17 @@ public class StartRequestData {
                 }else {
                     path = Net.getInstance().getBaseUrl()+ observable.post.value();
                 }
-            }else {
+            }else if(observable.put!=null) {
                 if(observable.put.value().startsWith("http")){
                     path = observable.put.value();
                 }else {
                     path = Net.getInstance().getBaseUrl()+ observable.put.value();
+                }
+            }else {
+                if(observable.delete.value().startsWith("http")){
+                    path = observable.delete.value();
+                }else {
+                    path = Net.getInstance().getBaseUrl()+ observable.delete.value();
                 }
             }
             requestInfo.setUrl(path);

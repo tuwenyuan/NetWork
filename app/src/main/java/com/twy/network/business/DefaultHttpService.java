@@ -214,6 +214,66 @@ public class DefaultHttpService extends HttpService {
         }
     }
 
+    @Override
+    public void excuteDeleteRequest(Map<String, String> headers, String params, DataListener listener, String bodyStr) {
+        HttpURLConnection urlConn = null;
+        try{
+            //urlConn = createPostRequest(params);
+
+            URL getUrl = new URL(bodyStr==null?requestInfo.getUrl():(requestInfo.getUrl().contains("?")?requestInfo.getUrl()+"&"+params:requestInfo.getUrl()+"?"+params));
+            urlConn = (HttpURLConnection) getUrl.openConnection();
+
+            if(fragmentToString!=null){
+                if(map.get(fragmentToString)==null){
+                    List<HttpURLConnection> list = new ArrayList<>();
+                    list.add(urlConn);
+                    map.put(fragmentToString,list);
+                }else {
+                    map.get(fragmentToString).add(urlConn);
+                }
+            }
+
+            urlConn.setDoOutput(true);
+            urlConn.setConnectTimeout(10000);
+            urlConn.setRequestMethod("DELETE");
+
+            //添加请求头
+            if(headers!=null) {
+                for (String key : headers.keySet()) {
+                    urlConn.setRequestProperty(key, requestInfo.getHeads().get(key));
+                }
+            }
+            if(bodyStr==null){
+                urlConn.getOutputStream().write(params.getBytes("utf-8"));
+            }else {
+                urlConn.setRequestProperty("Content-Type", " application/json");
+                urlConn.getOutputStream().write(bodyStr.getBytes("utf-8"));
+            }
+            int responseCode = urlConn.getResponseCode();
+            if (responseCode < 200 || responseCode >= 300) {
+                urlConn.disconnect();
+                throw new HttpException(responseCode,urlConn.getResponseMessage());
+            }
+
+            BufferedReader bis = new BufferedReader(new InputStreamReader(urlConn.getInputStream(), "utf-8"));
+
+            StringBuilder sb = new StringBuilder();
+            String lines;
+            while ((lines = bis.readLine()) != null) {
+                sb.append(lines);
+            }
+            final String finalLines = sb.toString();
+            cacel(urlConn);
+            listener.converter(finalLines);
+            urlConn.disconnect();
+        }catch (final Exception e){
+            listener.onError(e);
+            listener.onComplate();
+            if(urlConn!=null)
+                cacel(urlConn);
+        }
+    }
+
 
     @Override
     public void excuteUploadFileRequest(Map<String, String> headers, String params, File file, DataListener listener) {
