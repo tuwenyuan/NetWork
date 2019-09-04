@@ -3,6 +3,10 @@ package com.twy.network.business;
 import android.os.SystemClock;
 import android.text.TextUtils;
 
+import com.twy.network.AddCookiesInterceptor;
+import com.twy.network.BuildConfig;
+import com.twy.network.LoggingInterceptor;
+import com.twy.network.QueryParameterInterceptor;
 import com.twy.network.interfaces.DataListener;
 import com.twy.network.interfaces.HttpService;
 
@@ -10,11 +14,19 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import okhttp3.Call;
 import okhttp3.FormBody;
@@ -41,6 +53,25 @@ public class OkHttpService  extends HttpService {
         client.connectTimeout(15, TimeUnit.SECONDS);
         client.readTimeout(20, TimeUnit.SECONDS);
         client.writeTimeout(20, TimeUnit.SECONDS);
+
+        //公共参数
+        client.addInterceptor(new QueryParameterInterceptor());
+        client.addInterceptor(new AddCookiesInterceptor());
+
+        /**
+         * Log信息拦截器
+         */
+        LoggingInterceptor loggingInterceptor = new LoggingInterceptor();
+        loggingInterceptor.setLevel(BuildConfig.DEBUG ? LoggingInterceptor.Level.BODY : LoggingInterceptor.Level.BASIC);
+        client.addInterceptor(loggingInterceptor);
+
+        client.sslSocketFactory(createSSLSocketFactory());
+        client.hostnameVerifier(new HostnameVerifier() {
+            @Override
+            public boolean verify(String hostname, SSLSession session) {
+                return true;
+            }
+        });
     }
     @Override
     public void excuteGetRequest(Map<String, String> map, String s, DataListener listener) {
@@ -128,10 +159,21 @@ public class OkHttpService  extends HttpService {
         }
 
         /*Request.Builder builder = new Request.Builder()
-                .url(requestInfo.getUrl())
-                .post(fb.build());*/
+                .url(requestInfo.getUrl());
+        if(!TextUtils.isEmpty(s)) {
+            StringBuilder strb = new StringBuilder("{");
+            for (String str : s.split("&")) {
+                strb.append("\""+str.split("=")[0]+"\":"+"\""+str.split("=")[1]+"\",");
+            }
+            strb.delete(strb.length()-1,strb.length());
+            strb.append("}");
+            builder.post(RequestBody.create(MediaType.parse("application/json"),strb.toString()));
+        }*/
+
+
         if(map!=null && map.size()>0){
             Headers.Builder builder1 = new Headers.Builder();
+            //builder1.add("Content-Type","application/json");
             for(String s1 : map.keySet()){
                 builder1.add(s1,map.get(s1));
             }
@@ -152,24 +194,29 @@ public class OkHttpService  extends HttpService {
         Response response = null;
         try {
             response=call.execute();
-            ResponseBody responseBody = response.body();
-            BufferedSource source = responseBody.source();
-            source.request(Long.MAX_VALUE);
-            Buffer buffer = source.buffer();
-            MediaType contentType = responseBody.contentType();
-            Charset charset = Charset.forName("UTF-8");
-            if (contentType != null) {
-                charset = contentType.charset( Charset.forName("UTF-8"));
-            }
-            if (responseBody.contentLength() != 0) {
-                String result  = buffer.readString(charset);
-                if(TextUtils.isEmpty(result)){
-                    listener.onError(new Exception("没有响应数据"));
-                    listener.onComplate();
-                }else{
-                    result = URLDecoder.decode(result,charset.name());
-                    listener.converter(result);
+            if(response.code()==200){
+                ResponseBody responseBody = response.body();
+                BufferedSource source = responseBody.source();
+                source.request(Long.MAX_VALUE);
+                Buffer buffer = source.buffer();
+                MediaType contentType = responseBody.contentType();
+                Charset charset = Charset.forName("UTF-8");
+                if (contentType != null) {
+                    charset = contentType.charset( Charset.forName("UTF-8"));
                 }
+                if (responseBody.contentLength() != 0) {
+                    String result  = buffer.readString(charset);
+                    if(TextUtils.isEmpty(result)){
+                        listener.onError(new Exception("没有响应数据"));
+                        listener.onComplate();
+                    }else{
+                        result = URLDecoder.decode(result,charset.name());
+                        listener.converter(result);
+                    }
+                }
+            }else {
+                listener.onError(new Exception("responseCode::"+response.code()));
+                listener.onComplate();
             }
             cacel(call);
         } catch (final IOException e) {
@@ -374,5 +421,30 @@ public class OkHttpService  extends HttpService {
                 kvs.get(fragmentToString).remove(call);
             }
         }
+    }
+
+    private static javax.net.ssl.SSLSocketFactory createSSLSocketFactory() {
+        javax.net.ssl.SSLSocketFactory ssfFactory = null;
+
+        try {
+            SSLContext sc = SSLContext.getInstance("TLS");
+            sc.init(null, new TrustManager[]{new TrustAllCerts()}, new SecureRandom());
+
+            ssfFactory = sc.getSocketFactory();
+        } catch (Exception e) {
+        }
+
+        return ssfFactory;
+    }
+
+    public static class TrustAllCerts implements X509TrustManager {
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String authType) {}
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String authType) {}
+
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {return new X509Certificate[0];}
     }
 }
