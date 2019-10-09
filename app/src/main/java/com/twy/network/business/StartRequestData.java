@@ -150,6 +150,7 @@ public class StartRequestData {
                         }else if(observable.isMultipart){
                             throw new HttpException(ErrorCode.UploadFileTypeRequired.getCode(),ErrorCode.UploadFileTypeRequired.getName());
                         }
+                        params.put(((FileType)observable.paramNames.get(i)).value(),"");
                     }else if(observable.paramNames.get(i) instanceof Body){
                         if(observable.post!=null || observable.put!=null){
                             bodyStr = observable.paramValues[i].toString();

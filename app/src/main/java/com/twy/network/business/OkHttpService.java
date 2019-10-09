@@ -32,6 +32,7 @@ import okhttp3.Call;
 import okhttp3.FormBody;
 import okhttp3.Headers;
 import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -398,7 +399,73 @@ public class OkHttpService  extends HttpService {
     }
 
     @Override
-    public void excuteUploadFileRequest(Map<String, String> map, String s, File file, DataListener dataListener) {
+    public void excuteUploadFileRequest(Map<String, String> map, String s, File file, DataListener listener) {
+        //1.创建对应的MediaType 2.创建RequestBody
+        RequestBody fileBody = RequestBody.create(MediaType.parse("image/png"),file);
+        //3.构建MultipartBody
+        RequestBody requestBody = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart(s.split("=")[0], file.getName(), fileBody)
+                .build();
+
+        //4.构建请求
+        Request request = new Request.Builder()
+                .url(requestInfo.getUrl())
+                .post(requestBody)
+                .build();
+
+        //5.发送请求
+        Call call = client.build().newCall(request);
+        if(fragmentToString!=null){
+            if(kvs.get(fragmentToString)==null){
+                List<Call> list = new ArrayList<>();
+                list.add(call);
+                kvs.put(fragmentToString,list);
+            }else {
+                kvs.get(fragmentToString).add(call);
+            }
+        }
+
+        Response response = null;
+        try {
+            response=call.execute();
+            if(response.code()==200){
+                ResponseBody responseBody = response.body();
+                BufferedSource source = responseBody.source();
+                source.request(Long.MAX_VALUE);
+                Buffer buffer = source.buffer();
+                MediaType contentType = responseBody.contentType();
+                Charset charset = Charset.forName("UTF-8");
+                if (contentType != null) {
+                    charset = contentType.charset( Charset.forName("UTF-8"));
+                }
+                if (responseBody.contentLength() != 0) {
+                    String result  = buffer.readString(charset);
+                    if(TextUtils.isEmpty(result)){
+                        listener.onError(new Exception("没有响应数据"));
+                        listener.onComplate();
+                    }else{
+                        result = URLDecoder.decode(result,charset.name());
+                        listener.converter(result);
+                    }
+                }
+            }else {
+                listener.onError(new Exception("responseCode::"+response.code()));
+                listener.onComplate();
+            }
+            cacel(call);
+        } catch (final IOException e) {
+            e.printStackTrace();
+            cacel(call);
+            listener.onError(e);
+            listener.onComplate();
+        }finally {
+            try {
+                response.body().source().close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
     }
 
