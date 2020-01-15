@@ -1,15 +1,19 @@
 package com.twy.network.business;
 
-import android.os.SystemClock;
 import android.text.TextUtils;
 
 import com.twy.network.AddCookiesInterceptor;
 import com.twy.network.BuildConfig;
+import com.twy.network.Exception.HttpException;
 import com.twy.network.LoggingInterceptor;
 import com.twy.network.QueryParameterInterceptor;
 import com.twy.network.interfaces.DataListener;
 import com.twy.network.interfaces.HttpService;
+import okhttp3.*;
+import okio.Buffer;
+import okio.BufferedSource;
 
+import javax.net.ssl.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLDecoder;
@@ -22,31 +26,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-
-import okhttp3.Call;
-import okhttp3.FormBody;
-import okhttp3.Headers;
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
-import okio.Buffer;
-import okio.BufferedSource;
-
-
 /**
- * Author by twy, Email 499216359@qq.com, Date on 2019/1/14.
+ * Author by twy, Email 499216359@qq.com, Date on 2019/9/4.
  * PS: Not easy to write code, please indicate.
  */
-public class OkHttpService  extends HttpService {
+public class OkHttpService extends HttpService {
+
     Map<String,List<Call>> kvs = new HashMap<>();
     OkHttpClient.Builder client = new OkHttpClient.Builder();
     {
@@ -74,6 +59,7 @@ public class OkHttpService  extends HttpService {
             }
         });
     }
+
     @Override
     public void excuteGetRequest(Map<String, String> map, String s, DataListener listener) {
         Request.Builder builder = new Request.Builder()
@@ -104,6 +90,9 @@ public class OkHttpService  extends HttpService {
         Response response = null;
         try {
             response=call.execute();
+            if(response.code()<200 || response.code()>=300){
+                throw new HttpException(response.code(),response.message());
+            }
             ResponseBody responseBody = response.body();
             BufferedSource source = responseBody.source();
             source.request(Long.MAX_VALUE);
@@ -117,7 +106,6 @@ public class OkHttpService  extends HttpService {
                 String result  = buffer.readString(charset);
                 if(TextUtils.isEmpty(result)){
                     listener.onError(new Exception("没有响应数据"));
-                    listener.onComplate();
                 }else{
                     listener.converter(result);
                 }
@@ -127,7 +115,6 @@ public class OkHttpService  extends HttpService {
             e.printStackTrace();
             cacel(call);
             listener.onError(e);
-            listener.onComplate();
         }finally {
             try {
                 response.body().source().close();
@@ -143,8 +130,13 @@ public class OkHttpService  extends HttpService {
         if(bodyStr==null){
             FormBody.Builder fb = new FormBody.Builder();
             if(!TextUtils.isEmpty(s)) {
-                for (String str : s.split("&")) {
-                    fb.add(str.split("=")[0], str.split("=")[1]);
+                try {
+                    String[] starArray = s.split("&");
+                    for (String str : starArray) {
+                        fb.add(str.split("=")[0], str.split("=")[1].replace("tttwwwyyy","="));
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
                 }
             }
             builder.url(requestInfo.getUrl())
@@ -195,36 +187,34 @@ public class OkHttpService  extends HttpService {
         Response response = null;
         try {
             response=call.execute();
-            if(response.code()==200){
-                ResponseBody responseBody = response.body();
-                BufferedSource source = responseBody.source();
-                source.request(Long.MAX_VALUE);
-                Buffer buffer = source.buffer();
-                MediaType contentType = responseBody.contentType();
-                Charset charset = Charset.forName("UTF-8");
-                if (contentType != null) {
-                    charset = contentType.charset( Charset.forName("UTF-8"));
+            if(response.code()<200 || response.code()>=300){
+                throw new HttpException(response.code(),response.message());
+            }
+            ResponseBody responseBody = response.body();
+            BufferedSource source = responseBody.source();
+            source.request(Long.MAX_VALUE);
+            Buffer buffer = source.buffer();
+            MediaType contentType = responseBody.contentType();
+            Charset charset = Charset.forName("UTF-8");
+            if (contentType != null) {
+                charset = contentType.charset( Charset.forName("UTF-8"));
+            }
+            if (responseBody.contentLength() != 0) {
+                String result  = buffer.readString(charset);
+                if(TextUtils.isEmpty(result)){
+                    listener.onError(new Exception("没有响应数据"));
+                }else{
+                        /*result = result.replaceAll("%(?![0-9a-fA-F]{2})", "%25");
+                        result = result.replaceAll("\\+", "%2B");
+                        result = URLDecoder.decode(result,charset.name());*/
+                    listener.converter(result);
                 }
-                if (responseBody.contentLength() != 0) {
-                    String result  = buffer.readString(charset);
-                    if(TextUtils.isEmpty(result)){
-                        listener.onError(new Exception("没有响应数据"));
-                        listener.onComplate();
-                    }else{
-                        result = URLDecoder.decode(result,charset.name());
-                        listener.converter(result);
-                    }
-                }
-            }else {
-                listener.onError(new Exception("responseCode::"+response.code()));
-                listener.onComplate();
             }
             cacel(call);
-        } catch (final IOException e) {
+        } catch (final Exception e) {
             e.printStackTrace();
             cacel(call);
             listener.onError(e);
-            listener.onComplate();
         }finally {
             try {
                 response.body().source().close();
@@ -235,34 +225,30 @@ public class OkHttpService  extends HttpService {
     }
 
     @Override
-    public void excutePutRequest(Map<String, String> headers, String params, DataListener listener, String bodyStr) {
+    public void excutePutRequest(Map<String, String> map, String s, DataListener listener, String bodyStr) {
         Request.Builder builder = new Request.Builder();
         if(bodyStr==null){
             FormBody.Builder fb = new FormBody.Builder();
-            if(!TextUtils.isEmpty(params)) {
-                for (String str : params.split("&")) {
+            if(!TextUtils.isEmpty(s)) {
+                for (String str : s.split("&")) {
                     fb.add(str.split("=")[0], str.split("=")[1]);
                 }
             }
             builder.url(requestInfo.getUrl())
                     .put(fb.build());
         }else {
-            if(TextUtils.isEmpty(params)){
+            if(TextUtils.isEmpty(s)){
                 builder.url(requestInfo.getUrl())
                         .put(RequestBody.create(MediaType.parse("application/json"),bodyStr));
             }else {
-                builder.url(requestInfo.getUrl().contains("?")?requestInfo.getUrl()+"&"+params:requestInfo.getUrl()+"?"+params)
+                builder.url(requestInfo.getUrl().contains("?")?requestInfo.getUrl()+"&"+s:requestInfo.getUrl()+"?"+s)
                         .put(RequestBody.create(MediaType.parse("application/json"),bodyStr));
             }
         }
-
-        /*Request.Builder builder = new Request.Builder()
-                .url(requestInfo.getUrl())
-                .post(fb.build());*/
-        if(headers!=null && headers.size()>0){
+        if(map!=null && map.size()>0){
             Headers.Builder builder1 = new Headers.Builder();
-            for(String s1 : headers.keySet()){
-                builder1.add(s1,headers.get(s1));
+            for(String s1 : map.keySet()){
+                builder1.add(s1,map.get(s1));
             }
             builder.headers(builder1.build());
         }
@@ -277,10 +263,12 @@ public class OkHttpService  extends HttpService {
                 kvs.get(fragmentToString).add(call);
             }
         }
-
         Response response = null;
         try {
             response=call.execute();
+            if(response.code()<200 || response.code()>=300){
+                throw new HttpException(response.code(),response.message());
+            }
             ResponseBody responseBody = response.body();
             BufferedSource source = responseBody.source();
             source.request(Long.MAX_VALUE);
@@ -294,7 +282,6 @@ public class OkHttpService  extends HttpService {
                 String result  = buffer.readString(charset);
                 if(TextUtils.isEmpty(result)){
                     listener.onError(new Exception("没有响应数据"));
-                    listener.onComplate();
                 }else{
                     result = URLDecoder.decode(result,charset.name());
                     listener.converter(result);
@@ -303,9 +290,8 @@ public class OkHttpService  extends HttpService {
             cacel(call);
         } catch (final IOException e) {
             e.printStackTrace();
-            cacel(call);
             listener.onError(e);
-            listener.onComplate();
+            cacel(call);
         }finally {
             try {
                 response.body().source().close();
@@ -359,36 +345,32 @@ public class OkHttpService  extends HttpService {
         Response response = null;
         try {
             response=call.execute();
-            if(response.code()==200){
-                ResponseBody responseBody = response.body();
-                BufferedSource source = responseBody.source();
-                source.request(Long.MAX_VALUE);
-                Buffer buffer = source.buffer();
-                MediaType contentType = responseBody.contentType();
-                Charset charset = Charset.forName("UTF-8");
-                if (contentType != null) {
-                    charset = contentType.charset( Charset.forName("UTF-8"));
+            if(response.code()<200 || response.code()>=300){
+                throw new HttpException(response.code(),response.message());
+            }
+            ResponseBody responseBody = response.body();
+            BufferedSource source = responseBody.source();
+            source.request(Long.MAX_VALUE);
+            Buffer buffer = source.buffer();
+            MediaType contentType = responseBody.contentType();
+            Charset charset = Charset.forName("UTF-8");
+            if (contentType != null) {
+                charset = contentType.charset( Charset.forName("UTF-8"));
+            }
+            if (responseBody.contentLength() != 0) {
+                String result  = buffer.readString(charset);
+                if(TextUtils.isEmpty(result)){
+                    listener.onError(new Exception("没有响应数据"));
+                }else{
+                    result = URLDecoder.decode(result,charset.name());
+                    listener.converter(result);
                 }
-                if (responseBody.contentLength() != 0) {
-                    String result  = buffer.readString(charset);
-                    if(TextUtils.isEmpty(result)){
-                        listener.onError(new Exception("没有响应数据"));
-                        listener.onComplate();
-                    }else{
-                        result = URLDecoder.decode(result,charset.name());
-                        listener.converter(result);
-                    }
-                }
-            }else {
-                listener.onError(new Exception("responseCode::"+response.code()));
-                listener.onComplate();
             }
             cacel(call);
         } catch (final IOException e) {
             e.printStackTrace();
             cacel(call);
             listener.onError(e);
-            listener.onComplate();
         }finally {
             try {
                 response.body().source().close();
@@ -429,36 +411,32 @@ public class OkHttpService  extends HttpService {
         Response response = null;
         try {
             response=call.execute();
-            if(response.code()==200){
-                ResponseBody responseBody = response.body();
-                BufferedSource source = responseBody.source();
-                source.request(Long.MAX_VALUE);
-                Buffer buffer = source.buffer();
-                MediaType contentType = responseBody.contentType();
-                Charset charset = Charset.forName("UTF-8");
-                if (contentType != null) {
-                    charset = contentType.charset( Charset.forName("UTF-8"));
+            if(response.code()<200 || response.code()>=300){
+                throw new HttpException(response.code(),response.message());
+            }
+            ResponseBody responseBody = response.body();
+            BufferedSource source = responseBody.source();
+            source.request(Long.MAX_VALUE);
+            Buffer buffer = source.buffer();
+            MediaType contentType = responseBody.contentType();
+            Charset charset = Charset.forName("UTF-8");
+            if (contentType != null) {
+                charset = contentType.charset( Charset.forName("UTF-8"));
+            }
+            if (responseBody.contentLength() != 0) {
+                String result  = buffer.readString(charset);
+                if(TextUtils.isEmpty(result)){
+                    listener.onError(new Exception("没有响应数据"));
+                }else{
+                    result = URLDecoder.decode(result,charset.name());
+                    listener.converter(result);
                 }
-                if (responseBody.contentLength() != 0) {
-                    String result  = buffer.readString(charset);
-                    if(TextUtils.isEmpty(result)){
-                        listener.onError(new Exception("没有响应数据"));
-                        listener.onComplate();
-                    }else{
-                        result = URLDecoder.decode(result,charset.name());
-                        listener.converter(result);
-                    }
-                }
-            }else {
-                listener.onError(new Exception("responseCode::"+response.code()));
-                listener.onComplate();
             }
             cacel(call);
         } catch (final IOException e) {
             e.printStackTrace();
             cacel(call);
             listener.onError(e);
-            listener.onComplate();
         }finally {
             try {
                 response.body().source().close();

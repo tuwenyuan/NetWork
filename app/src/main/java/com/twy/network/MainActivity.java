@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
         Net net = new Net.Builder()
                 .setConverterFactory(new ResponseConvertFactory(new Gson()))
                 .baseUrl("http://94.191.92.69:8080/Upload/")
-                //.setHttpService(new OkHttpService())
+                .setHttpService(new OkHttpService())
                 .build();
         services = net.create(ITestServices.class);
     }
