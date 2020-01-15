@@ -23,11 +23,9 @@ public abstract class DataListener<M> {
         Converter<String, ?> stringConverter = Net.getInstance().getConverFactory().responseBodyConverter(type);
         try {
             onRecvData((M)stringConverter.convert(result));
-            onComplate();
         } catch (Exception e) {
             e.printStackTrace();
             onError(e);
-            onComplate();
         }
     }
 

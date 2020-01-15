@@ -88,7 +88,6 @@ public class DefaultHttpService extends HttpService {
             urlConn.disconnect();
         }catch (final Exception e){
             listener.onError(e);
-            listener.onComplate();
             if(urlConn!=null)
                 cacel(urlConn);
         }
@@ -148,7 +147,6 @@ public class DefaultHttpService extends HttpService {
             urlConn.disconnect();
         }catch (final Exception e){
             listener.onError(e);
-            listener.onComplate();
             if(urlConn!=null)
                 cacel(urlConn);
         }
@@ -208,7 +206,6 @@ public class DefaultHttpService extends HttpService {
             urlConn.disconnect();
         }catch (final Exception e){
             listener.onError(e);
-            listener.onComplate();
             if(urlConn!=null)
                 cacel(urlConn);
         }
@@ -268,7 +265,6 @@ public class DefaultHttpService extends HttpService {
             urlConn.disconnect();
         }catch (final Exception e){
             listener.onError(e);
-            listener.onComplate();
             if(urlConn!=null)
                 cacel(urlConn);
         }
@@ -355,6 +351,9 @@ public class DefaultHttpService extends HttpService {
                 cacel(urlConn);
                 listener.converter(finalLines);
                 urlConn.disconnect();
+            }else {
+                urlConn.disconnect();
+                throw new HttpException(res,urlConn.getResponseMessage());
             }
         } catch (Exception e) {
             e.printStackTrace();

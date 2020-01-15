@@ -86,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
 
     ITestServices services;
     private void getUserGet(){
-        Net.startRequestData(this, services.getIndexPageData(1, 20,640,208), new OnRecvDataListener<String>() {
+        Net.startRequestData(this, services.indexData(), new OnRecvDataListener<String>() {
             @Override
             public void onStart() {
                 Log.i("twy",Thread.currentThread().getName()+"***onStart");
@@ -105,6 +105,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onRecvData(String data) {
                 Log.i("twy",data);
+                int i = 0;
+                int s = 10/i;
             }
         });
     }

@@ -93,7 +93,7 @@ public final class Net {
             if (fragment == null) {
                 fragment = new RequestManagerFragment();
                 map.put(activity,fragment);
-                activity.getSupportFragmentManager().beginTransaction().add(fragment, "myfragment").commit();
+                activity.getSupportFragmentManager().beginTransaction().add(fragment, "myfragment").commitAllowingStateLoss();
             }
             fragment.startRequestData(observable, listener, new IUnsubscribe() {
                 @Override

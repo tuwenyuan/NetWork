@@ -55,7 +55,14 @@ public class StartRequestData {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        dataListener.onRecvData(data);
+                        try {
+                            dataListener.onRecvData(data);
+                            onComplate();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            onError(e);
+                        }
+
                     }
                 });
             }
@@ -66,6 +73,7 @@ public class StartRequestData {
                     @Override
                     public void run() {
                         dataListener.onError(e);
+                        onComplate();
                     }
                 });
             }

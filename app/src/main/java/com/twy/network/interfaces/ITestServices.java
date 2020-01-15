@@ -20,8 +20,8 @@ public interface ITestServices {
     @POST("servlet/UploadFile")
     Observable<CommBean> uploadFile(@Query(value = "params",encoded = true) String params, @FileType("iconFile") java.io.File file);
 
-    @POST("http://tt.ugou88.com/ugou-wx/i/custom_page/getIndexPageData")
-    Observable<String> getIndexPageData(@Query(value = "pageNumber") int pageNumber,@Query("pageSize") int pageSize,@Query("pcid") int pcid,@Query("pid") int pid);
+    @GET("https://tt.weinicq.com/i/index/indexData")
+    Observable<String> indexData();
 
     @POST("http://39.108.81.229:8001/v1/api/account/logon")
     Observable<String> logon(@Body User1 user);
